@@ -319,7 +319,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const save = async () => {
         let defaultPath = await ipcRenderer.invoke("get-original-image")
         if (!defaultPath.startsWith("file:///")) {
-            let name = defaultPath.startsWith("data:") ? `image.${image.match(/(?<=data:image\/)(.*)(?=;)/)?.[0]}` : path.basename(defaultPath)
+            let name = defaultPath.startsWith("data:") ? `image` : path.basename(defaultPath)
             defaultPath = `${remote.app.getPath("downloads")}/${name}`
         }
         let savePath = await ipcRenderer.invoke("save-dialog", defaultPath)
