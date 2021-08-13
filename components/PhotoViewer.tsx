@@ -64,7 +64,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const [resetHover, setResetHover] = useState(false)
     const [previousHover, setPreviousHover] = useState(false)
     const [nextHover, setNextHover] = useState(false)
-    const [image, setImage] = useState(noImage)
+    const [image, setImage] = useState("")
     const [hover, setHover] = useState(false)
     const initialCropState = {unit: "%", x: 0, y: 0, width: 100, height: 100, aspect: undefined}
     const [cropState, setCropState] = useState(initialCropState)
@@ -152,6 +152,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const copyAddress = () => {
             clipboard.writeText(image)
         }
+        if (!image) setImage(noImage)
         ipcRenderer.on("copy-image", copyImage)
         ipcRenderer.on("copy-address", copyAddress)
         ipcRenderer.on("save-img-context", save)
