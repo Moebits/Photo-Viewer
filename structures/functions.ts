@@ -4,7 +4,7 @@ import gifFrames from "gif-frames"
 import fs from "fs"
 import path from "path"
 
-const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".tiff", ".svg"]
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
 
 export default class Functions {
     public static arrayIncludes = (str: string, arr: string[]) => {

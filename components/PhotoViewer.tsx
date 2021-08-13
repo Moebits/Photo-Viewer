@@ -43,7 +43,7 @@ import functions from "../structures/functions"
 import "react-image-crop/dist/ReactCrop.css"
 import "../styles/photoviewer.less"
 
-const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".tiff"]
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
 
 const PhotoViewer: React.FunctionComponent = (props) => {
     const [brightnessHover, setBrightnessHover] = useState(false)

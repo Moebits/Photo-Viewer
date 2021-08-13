@@ -63,8 +63,8 @@ const VersionDialog: React.FunctionComponent = (props) => {
                     <div className="version-container">
                         <p className="version-dialog-text">{getText()}</p>
                         <div className="version-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{newVersion ? "No" : "Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{newVersion ? "Yes" : "Ok"}</button>
+                            <button onClick={() => click("reject")} className="version-reject-button">{newVersion ? "No" : "Cancel"}</button>
+                            <button onClick={() => click("accept")} className="version-accept-button">{newVersion ? "Yes" : "Ok"}</button>
                         </div>
                     </div>
                 </div>

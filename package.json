@@ -1,6 +1,6 @@
 {
   "name": "photo-viewer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An image/GIF viewer that can apply various resizing and color effects.",
   "main": "dist/main.js",
   "scripts": {
@@ -72,14 +72,6 @@
       {
         "ext": "gif",
         "description": "GIF files"
-      },
-      {
-        "ext": "svg",
-        "description": "Image files"
-      },
-      {
-        "ext": "tiff",
-        "description": "Image files"
       }
     ]
   },
