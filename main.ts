@@ -16,6 +16,7 @@ autoUpdater.autoDownload = false
 const store = new Store()
 
 let originalImage = null as any
+let originalName = null as any
 let historyStates = [] as string[]
 let historyIndex = -1
 
@@ -23,6 +24,20 @@ const updateHistoryState = (image: string) => {
   historyIndex++
   historyStates.splice(historyIndex, Infinity, image)
 }
+
+ipcMain.handle("get-original-name", async () => {
+  return originalName
+})
+
+ipcMain.handle("set-original-name", async (event, name: any) => {
+  originalName = name
+})
+
+ipcMain.handle("tiff-to-png", async (event, file: string) => {
+  if (file.startsWith("file:///")) file = file.replace("file:///", "")
+  const buffer = await sharp(file).png().toBuffer()
+  return functions.bufferToBase64(buffer, "png")
+})
 
 ipcMain.handle("escape-pressed", () => {
   window?.webContents.send("escape-pressed")
@@ -502,7 +517,6 @@ ipcMain.handle("invert", async (event, image: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     const {frameArray, delayArray} = await functions.getGIFFrames(image)
-    window?.webContents.send("debug", frameArray)
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i]).negate().toBuffer()
@@ -569,7 +583,6 @@ ipcMain.handle("save-dialog", async (event, defaultPath: string) => {
       {name: "JPG", extensions: ["jpg"]},
       {name: "GIF", extensions: ["gif"]},
       {name: "WEBP", extensions: ["webp"]},
-      {name: "SVG", extensions: ["svg"]},
       {name: "TIFF", extensions: ["tiff"]}
     ],
     properties: ["createDirectory"]
@@ -641,7 +654,7 @@ ipcMain.handle("select-file", async () => {
   const files = await dialog.showOpenDialog(window, {
     filters: [
       {name: "All Files", extensions: ["*"]},
-      {name: "Images", extensions: ["jpg", "jpeg", "png", "webp"]},
+      {name: "Images", extensions: ["jpg", "jpeg", "png", "webp", "tiff"]},
       {name: "GIF", extensions: ["gif"]}
     ],
     properties: ["openFile"]

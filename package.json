@@ -70,6 +70,10 @@
         "description": "Image files"
       },
       {
+        "ext": "tiff",
+        "description": "Image files"
+      },
+      {
         "ext": "gif",
         "description": "GIF files"
       }

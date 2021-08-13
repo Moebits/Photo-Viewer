@@ -5,7 +5,7 @@
 This is a photo/GIF viewer with support for many cool resizing and color effects.
 
 ### Features:
-- View images (PNG, JPG, WEBP, SVG, TIFF) and animated GIFs
+- View images (PNG, JPG, WEBP, TIFF) and animated GIFs
 - Support for local files, links, and images on the clipboard
 - Brightness/Contrast adjustment
 - Hue/Saturation/Lightness adjustment

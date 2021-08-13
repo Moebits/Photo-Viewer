@@ -43,7 +43,7 @@ import functions from "../structures/functions"
 import "react-image-crop/dist/ReactCrop.css"
 import "../styles/photoviewer.less"
 
-const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"]
 
 const PhotoViewer: React.FunctionComponent = (props) => {
     const [brightnessHover, setBrightnessHover] = useState(false)
@@ -87,6 +87,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (link) {
                 setImage(link)
                 ipcRenderer.invoke("update-original-image", link)
+                ipcRenderer.invoke("set-original-name", null)
             }
         }
         const triggerPaste = () => {
@@ -95,6 +96,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             const base64 = functions.bufferToBase64(img.toPNG(), "png")
             setImage(base64)
             ipcRenderer.invoke("update-original-image", base64)
+            ipcRenderer.invoke("set-original-name", null)
         }
         const updateImage = (event: any, base64: string) => {
             if (base64) setImage(base64)
@@ -120,7 +122,6 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         ipcRenderer.on("apply-binarize", binarize)
         ipcRenderer.on("trigger-undo", triggerUndo)
         ipcRenderer.on("trigger-redo", triggerRedo)
-        ipcRenderer.on("debug", (event, s) => {console.log(s)})
         return () => {
             ipcRenderer.removeListener("open-file", openFile)
             ipcRenderer.removeListener("upload-file", openFile)
@@ -165,7 +166,6 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const crop = async (response: "accept" | "cancel") => {
             if (response === "accept") {
                 const newImage = await ipcRenderer.invoke("crop", cropState)
-                console.log(newImage)
                 if (newImage) setImage(newImage)
             }
             toggleCrop(false)
@@ -197,8 +197,13 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         if (!file) file = await ipcRenderer.invoke("select-file")
         if (!file) return
         if (!imageExtensions.includes(path.extname(file))) return
-        setImage(file)
-        ipcRenderer.invoke("update-original-image", file)
+        let newImg = file
+        if (path.extname(file) === ".tiff") {
+            newImg = await ipcRenderer.invoke("tiff-to-png", file)
+            ipcRenderer.invoke("set-original-name", path.basename(file, path.extname(file)))
+        }
+        setImage(newImg)
+        ipcRenderer.invoke("update-original-image", newImg)
     }
 
     const brightness = async (event?: any, state?: any) => {
@@ -319,10 +324,21 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const save = async () => {
         let defaultPath = await ipcRenderer.invoke("get-original-image")
         if (!defaultPath.startsWith("file:///")) {
-            let name = defaultPath.startsWith("data:") ? `image` : path.basename(defaultPath)
+            let name = null as any
+            if (defaultPath.startsWith("data:")) {
+                const originalName = await ipcRenderer.invoke("get-original-name")
+                if (originalName) {
+                    name = originalName
+                } else {
+                    name = "image"
+                }
+            } else {
+                name = path.basename(defaultPath)
+            }
             defaultPath = `${remote.app.getPath("downloads")}/${name}`
         }
         let savePath = await ipcRenderer.invoke("save-dialog", defaultPath)
+        if (!savePath) return
         if (!path.extname(savePath)) savePath += path.extname(defaultPath)
         ipcRenderer.invoke("save-image", image, savePath)
     }

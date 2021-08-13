@@ -40,7 +40,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverTheme, setHoverTheme] = useState(false)
     const [hoverCancel, setHoverCancel] = useState(false)
     const [hoverAccept, setHoverAccept] = useState(false)
-    const [theme, setTheme] = useState("light")
+    const [theme, setTheme] = useState("dark")
     const [acceptAction, setAcceptAction] = useState(null as any)
 
     useEffect(() => {
@@ -106,6 +106,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const changeTheme = (value?: string) => {
         let condition = value !== undefined ? value === "dark" : theme === "light"
         if (condition) {
+            document.documentElement.style.setProperty("--bg-color", "#090409")
             document.documentElement.style.setProperty("--title-color", "#090409")
             document.documentElement.style.setProperty("--text-color", "#3177f5")
             document.documentElement.style.setProperty("--button-color", "#090409")
@@ -113,6 +114,7 @@ const TitleBar: React.FunctionComponent = (props) => {
             setTheme("dark")
             ipcRenderer.invoke("save-theme", "dark")
         } else {
+            document.documentElement.style.setProperty("--bg-color", "#7294cf")
             document.documentElement.style.setProperty("--title-color", "#3177f5")
             document.documentElement.style.setProperty("--text-color", "black")
             document.documentElement.style.setProperty("--button-color", "#4486ff")
