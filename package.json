@@ -1,7 +1,7 @@
 {
   "name": "photo-viewer",
   "version": "0.0.1",
-  "description": "A photo viewer that can apply various image effects.",
+  "description": "An image/GIF viewer that can apply various resizing and color effects.",
   "main": "dist/main.js",
   "scripts": {
     "start": "npm run clean && webpack && cross-env DEVELOPMENT=true electron dist/main.js",
