@@ -73,7 +73,11 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     useEffect(() => {
         const getOpenedFile = async () => {
             const file = await ipcRenderer.invoke("get-opened-file")
-            if (file) upload (file)
+            if (file) {
+                upload (file)
+            } else {
+                setImage(noImage)
+            }
         }
         ipcRenderer.invoke("update-original-image", image)
         getOpenedFile()
@@ -152,7 +156,6 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const copyAddress = () => {
             clipboard.writeText(image)
         }
-        if (!image) setImage(noImage)
         ipcRenderer.on("copy-image", copyImage)
         ipcRenderer.on("copy-address", copyAddress)
         ipcRenderer.on("save-img-context", save)
