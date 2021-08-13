@@ -77,6 +77,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 upload (file)
             } else {
                 setImage(noImage)
+                ipcRenderer.invoke("update-original-image", noImage)
             }
         }
         ipcRenderer.invoke("update-original-image", image)
