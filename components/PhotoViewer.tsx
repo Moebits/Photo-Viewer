@@ -73,7 +73,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     useEffect(() => {
         const getOpenedFile = async () => {
             const file = await ipcRenderer.invoke("get-opened-file")
-            if (file) {
+            if (imageExtensions.includes(path.extname(file))) {
                 upload (file)
             } else {
                 setImage(noImage)
