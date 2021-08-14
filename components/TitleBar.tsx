@@ -43,7 +43,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverCancel, setHoverCancel] = useState(false)
     const [hoverAccept, setHoverAccept] = useState(false)
     const [hoverGIF, setHoverGIF] = useState(false)
-    const [theme, setTheme] = useState("dark")
+    const [theme, setTheme] = useState("light")
     const [acceptAction, setAcceptAction] = useState(null as any)
 
     useEffect(() => {
