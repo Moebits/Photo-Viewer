@@ -104,7 +104,10 @@ const GIFDialog: React.FunctionComponent = (props) => {
     
     const close = () => {
         setTimeout(() => {
-            if (!hover && clickCounter > 1) closeAndReset()
+            if (!hover && clickCounter > 1) {
+                ipcRenderer.invoke("set-gif-options", state)
+                closeAndReset()
+            }
         }, 100)
     }
 
