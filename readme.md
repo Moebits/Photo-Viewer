@@ -14,6 +14,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - Pixelate effect
 - Binarize effect
 - Crop, resize, rotate, and flip transformations
+- GIF speed, reverse, and transparency adjustments
 - Undo and redo history states
 - Open next and previous files (from the file system)
 - Save images and GIFs with the applied effects

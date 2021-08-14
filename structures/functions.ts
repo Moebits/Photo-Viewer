@@ -163,12 +163,13 @@ export default class Functions {
         return Math.max(w, h, width, height)
     }
 
-    public static encodeGIF = async (frames: Buffer[], delays: number[], width: number, height: number) => {
+    public static encodeGIF = async (frames: Buffer[], delays: number[], width: number, height: number, options?: {transparentColor?: string}) => {
+        if (!options) options = {} as {transparentColor?: string}
         const gif = new GifEncoder(width, height, {highWaterMark: 5 * 1024 * 1024})
         gif.setQuality(10)
         gif.setRepeat(0)
         gif.writeHeader()
-        // gif.setTransparent(1)
+        if (options?.transparentColor) gif.setTransparent(Functions.parseTransparentColor(options.transparentColor))
         let counter = 0
 
         const addToGif = async (frames: Buffer[]) => {
@@ -186,14 +187,29 @@ export default class Functions {
         return Functions.streamToBuffer(gif as NodeJS.ReadableStream)
     }
 
-    public static getGIFFrames = async (image: any) => {
-        const frames = await gifFrames({url: image, frames: "all", outputType: "png", cumulative: true})
-        const frameArray = [] as Buffer[]
-        const delayArray = [] as number[]
-        for (let i = 0; i < frames.length; i++) {
+    public static getGIFFrames = async (image: any, options?: {speed?: number, reverse?: boolean, cumulative?: boolean}) => {
+        if (!options) options = {} as {speed: number, reverse: boolean, cumulative: boolean}
+        if (!options.speed) options.speed = 1
+        if (!options.reverse) options.reverse = false
+        if (!options.cumulative) options.cumulative = false
+        const frames = await gifFrames({url: image, frames: "all", outputType: "png", cumulative: options.cumulative})
+        let frameArray = [] as Buffer[]
+        let delayArray = [] as number[]
+        const constraint = options.speed > 1 ? frames.length / options.speed : frames.length
+        let step = Math.ceil(frames.length / constraint)
+        for (let i = 0; i < frames.length; i += step) {
             frameArray.push(await Functions.streamToBuffer(frames[i].getImage()))
             delayArray.push(frames[i].frameInfo.delay)
         }
+        if (options.speed < 1) delayArray = delayArray.map((n) => n / options?.speed!)
+        if (options.reverse) {
+            frameArray = frameArray.reverse()
+            delayArray = delayArray.reverse()
+        }
         return {frameArray, delayArray}
+    }
+
+    public static parseTransparentColor = (color: string) => {
+        return Number(`0x${color.replace(/^#/, "")}`)
     }
 }

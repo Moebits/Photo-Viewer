@@ -24,14 +24,16 @@ const TintDialog: React.FunctionComponent = (props) => {
         const closeAllDialogs = (event: any, ignore: any) => {
             if (ignore !== "tint") closeAndReset()
         }
-        document.onclick = () => {
+        const clickCounter = () => {
             setClickCounter((prev) => prev + 1)
         }
+        document.addEventListener("click", clickCounter)
         ipcRenderer.on("show-tint-dialog", showTintDialog)
         ipcRenderer.on("close-all-dialogs", closeAllDialogs)
         return () => {
             ipcRenderer.removeListener("show-tint-dialog", showTintDialog)
             ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            document.removeEventListener("click", clickCounter)
         }
     }, [])
 

@@ -1,7 +1,7 @@
 @import "../index.less";
 @import "./titlebar.less";
 
-.tint-dialog {
+.gif-dialog {
     position: fixed;
     display: flex;
     width: 100%;
@@ -14,14 +14,14 @@
     z-index: 500;
 }
 
-.tint-dialog-box {
+.gif-dialog-box {
     position: absolute;
-    left: 70px;
-    top: 130px;
-    width: 180px;
-    height: 135px;
+    right: 170px;
+    top: 60px;
+    width: 190px;
+    height: 220px;
     border-radius: 10px;
-    background-color: var(--title-color); // #2c99ff;
+    background-color: var(--title-color);
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -29,7 +29,7 @@
     align-items: center;
 }
 
-.tint-container {
+.gif-container {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -40,7 +40,7 @@
     padding-right: 10px;
 }
 
-.tint-title-container {
+.gif-title-container {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -51,7 +51,7 @@
     }
 }
 
-.tint-title {
+.gif-title {
     color: var(--text-color);
     font-size: 17px;
     font-family: "Maven Pro", sans-serif;
@@ -60,25 +60,24 @@
     }
 }
 
-.tint-row-container {
+.gif-row-container {
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
     align-items: flex-start;
     justify-content: flex-start;
     width: 100%;
 }
 
-.tint-row {
+.gif-row {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
-.tint-text {
+.gif-text {
     user-select: text;
     cursor: text;
     color: var(--text-color);
@@ -89,9 +88,10 @@
     }
 }
 
-.tint-button-container {
+
+.gif-button-container {
     display: flex;
-    margin-top: 15px;
+    margin-top: 10px;
     justify-content: space-evenly;
     width: 100%;
 }
@@ -136,7 +136,26 @@
     }
 }
 
-.tint-color-box {
-	width: 25px;
-	height: 25px;
+.gif-input {
+    color: var(--text-color);
+    border: none;
+    width: 25px;
+    margin-left: 10px;
+    font-family: "Maven Pro", sans-serif;
+    font-size: 15px;
+    background-color: transparent;
+}
+
+.gif-checkbox-container {
+    margin-left: 10px;
+}
+
+.gif-checkbox {
+    cursor: pointer;
+}
+
+.gif-color-box {
+    margin-left: 10px;
+	width: 12px;
+	height: 12px;
 }

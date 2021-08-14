@@ -25,6 +25,8 @@ import cancelButton from "../assets/icons/cancel.png"
 import cancelButtonHover from "../assets/icons/cancel-hover.png"
 import acceptButton from "../assets/icons/accept.png"
 import acceptButtonHover from "../assets/icons/accept-hover.png"
+import gifButton from "../assets/icons/gif.png"
+import gifButtonHover from "../assets/icons/gif-hover.png"
 import pack from "../package.json"
 import "../styles/titlebar.less"
 
@@ -40,6 +42,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverTheme, setHoverTheme] = useState(false)
     const [hoverCancel, setHoverCancel] = useState(false)
     const [hoverAccept, setHoverAccept] = useState(false)
+    const [hoverGIF, setHoverGIF] = useState(false)
     const [theme, setTheme] = useState("dark")
     const [acceptAction, setAcceptAction] = useState(null as any)
 
@@ -141,6 +144,10 @@ const TitleBar: React.FunctionComponent = (props) => {
         setAcceptAction(null)
     }
 
+    const gif = () => {
+        ipcRenderer.invoke("show-gif-dialog")
+    }
+
     return (
         <section className="title-bar">
                 <div className="title-bar-drag-area">
@@ -154,6 +161,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>
                         </> : null}
                         <img src={hoverTheme ? (theme === "light" ? darkButtonHover : lightButtonHover) : (theme === "light" ? darkButton : lightButton)} height="20" width="20" className="title-bar-button theme-button" onClick={() => changeTheme()} onMouseEnter={() => setHoverTheme(true)} onMouseLeave={() => setHoverTheme(false)}/>
+                        <img src={hoverGIF ? gifButtonHover : gifButton} height="20" width="20" className="title-bar-button gif-button" onClick={gif} onMouseEnter={() => setHoverGIF(true)} onMouseLeave={() => setHoverGIF(false)}/>
                         <img src={hoverPaste ? pasteButtonHover : pasteButton} height="20" width="20" className="title-bar-button paste-button" onClick={paste} onMouseEnter={() => setHoverPaste(true)} onMouseLeave={() => setHoverPaste(false)}/>
                         <img src={hoverLink ? linkButtonHover : linkButton} height="20" width="20" className="title-bar-button link-button" onClick={link} onMouseEnter={() => setHoverLink(true)} onMouseLeave={() => setHoverLink(false)}/>
                         <img src={hoverUpload ? uploadButtonHover : uploadButton} height="20" width="20" className="title-bar-button upload-button" onClick={upload} onMouseEnter={() => setHoverUpload(true)} onMouseLeave={() => setHoverUpload(false)}/>

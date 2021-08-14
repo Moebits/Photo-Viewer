@@ -14,6 +14,7 @@ import RotateDialog from "./components/RotateDialog"
 import TintDialog from "./components/TintDialog"
 import ResizeDialog from "./components/ResizeDialog"
 import BinarizeDialog from "./components/BinarizeDialog"
+import GIFDialog from "./components/GIFDialog"
 import "./index.less"
 
 const App = () => {
@@ -31,6 +32,7 @@ const App = () => {
       <ContextMenu/>
       <VersionDialog/>
       <LinkDialog/>
+      <GIFDialog/>
       <BrightnessDialog/>
       <HSLDialog/>
       <BlurDialog/>

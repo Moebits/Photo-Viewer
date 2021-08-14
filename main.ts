@@ -25,6 +25,51 @@ const updateHistoryState = (image: string) => {
   historyStates.splice(historyIndex, Infinity, image)
 }
 
+const getGIFOptions = () => {
+  return store.get("gifOptions", {
+    transparency: false,
+    transparentColor: "#000000",
+    cumulative: true
+  }) as {transparency: boolean, transparentColor: string, cumulative: boolean}
+}
+
+ipcMain.handle("get-gif-options", () => {
+  return getGIFOptions()
+})
+
+ipcMain.handle("set-gif-options", (event: any, state: any) => {
+  let {transparency, transparentColor, cumulative} = state
+  store.set("gifOptions", {transparency, transparentColor, cumulative})
+})
+
+ipcMain.handle("gif-effects", async (event: any, state: any) => {
+  let {speed, reverse, transparency, transparentColor, cumulative} = state
+  let image = historyStates[historyIndex] as any
+  if (!image) return null
+  if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
+  const metadata = await sharp(image).metadata()
+  if (metadata.format === "gif") {
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {speed: Number(speed), reverse, cumulative})
+    const newFrameArray = [] as Buffer[]
+    for (let i = 0; i < frameArray.length; i++) {
+      const newFrame = await sharp(frameArray[i]).toBuffer()
+      newFrameArray.push(newFrame)
+    }
+    let transColor = transparency ? transparentColor : undefined
+    const buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor: transColor})
+    const base64 = functions.bufferToBase64(buffer, "gif")
+    updateHistoryState(base64)
+    window?.webContents.send("update-image", base64)
+    store.set("gifOptions", {transparency, transparentColor, cumulative})
+  }
+})
+
+ipcMain.handle("show-gif-dialog", async (event) => {
+  window?.webContents.send("close-all-dialogs", "gif")
+  window?.webContents.send("show-gif-dialog")
+})
+
 ipcMain.handle("get-original-name", async () => {
   return originalName
 })
@@ -87,7 +132,8 @@ ipcMain.handle("crop", async (event, state: any) => {
   const cropHeight = Math.round(metadata.height! / 100 * height)
   let buffer = null as any
   if (metadata.format === "gif") {
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -95,7 +141,8 @@ ipcMain.handle("crop", async (event, state: any) => {
         .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, cropWidth, cropHeight)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, cropWidth, cropHeight, {transparentColor})
   } else {
     buffer = await sharp(image)
       .extract({left: cropX, top: cropY, width: cropWidth, height: cropHeight})
@@ -116,7 +163,8 @@ ipcMain.handle("rotate", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -125,7 +173,8 @@ ipcMain.handle("rotate", async (event, state: any) => {
       newFrameArray.push(newFrame)
     }
     const newMeta = await sharp(newFrameArray[0]).metadata()
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, newMeta.width!, newMeta.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, newMeta.width!, newMeta.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .rotate(degrees)
@@ -160,7 +209,8 @@ ipcMain.handle("resize", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -168,7 +218,8 @@ ipcMain.handle("resize", async (event, state: any) => {
       .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, Number(width), Number(height))
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, Number(width), Number(height), {transparentColor})
   } else {
     buffer = await sharp(image)
       .resize(Number(width), Number(height), {fit: "fill", kernel: "cubic"})
@@ -202,7 +253,8 @@ ipcMain.handle("binarize", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -210,7 +262,8 @@ ipcMain.handle("binarize", async (event, state: any) => {
       .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .threshold(binarize)
@@ -244,7 +297,8 @@ ipcMain.handle("pixelate", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const pixelWidth = Math.floor(metadata.width! / strength)
@@ -256,7 +310,8 @@ ipcMain.handle("pixelate", async (event, state: any) => {
         .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     const pixelWidth = Math.floor(metadata.width! / strength)
     const pixelBuffer = await sharp(image)
@@ -294,7 +349,8 @@ ipcMain.handle("blur", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -303,7 +359,8 @@ ipcMain.handle("blur", async (event, state: any) => {
         .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .blur(blur)
@@ -338,7 +395,8 @@ ipcMain.handle("tint", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -346,7 +404,8 @@ ipcMain.handle("tint", async (event, state: any) => {
       .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .tint(tint)
@@ -380,7 +439,8 @@ ipcMain.handle("hsl", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -388,7 +448,8 @@ ipcMain.handle("hsl", async (event, state: any) => {
         .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .modulate({hue, saturation, brightness: lightness})
@@ -422,7 +483,8 @@ ipcMain.handle("brightness", async (event, state: any) => {
   let buffer = null as any
   if (metadata.format === "gif") {
     if (realTime) return null
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
@@ -431,7 +493,8 @@ ipcMain.handle("brightness", async (event, state: any) => {
         .toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
       .modulate({brightness: brightness})
@@ -516,13 +579,15 @@ ipcMain.handle("invert", async (event, image: any) => {
   const metadata = await sharp(image).metadata()
   let buffer = null as any
   if (metadata.format === "gif") {
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i]).negate().toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image).negate().toBuffer()
   }
@@ -537,13 +602,15 @@ ipcMain.handle("flipY", async (event, image: any) => {
   const metadata = await sharp(image).metadata()
   let buffer = null as any
   if (metadata.format === "gif") {
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i]).flip().toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image).flip().toBuffer()
   }
@@ -558,13 +625,15 @@ ipcMain.handle("flipX", async (event, image: any) => {
   const metadata = await sharp(image).metadata()
   let buffer = null as any
   if (metadata.format === "gif") {
-    const {frameArray, delayArray} = await functions.getGIFFrames(image)
+    const gifOptions = getGIFOptions()
+    const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i]).flop().toBuffer()
       newFrameArray.push(newFrame)
     }
-    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!)
+    const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
+    buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
     buffer = await sharp(image).flop().toBuffer()
   }
