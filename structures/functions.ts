@@ -1,6 +1,9 @@
+import {ipcRenderer} from "electron"
 import GifEncoder from "gif-encoder"
 import pixels from "image-pixels"
 import gifFrames from "gif-frames"
+import Pixiv from "pixiv.ts"
+import unzipper from "unzipper"
 import fs from "fs"
 import path from "path"
 
@@ -163,6 +166,11 @@ export default class Functions {
         return Math.max(w, h, width, height)
     }
 
+    public static readableFileSize = (bytes: number) => {
+        const i = bytes === 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024))
+        return `${Number((bytes / Math.pow(1024, i)).toFixed(2))} ${["B", "kB", "MB", "GB", "TB"][i]}`
+    }
+
     public static encodeGIF = async (frames: Buffer[], delays: number[], width: number, height: number, options?: {transparentColor?: string}) => {
         if (!options) options = {} as {transparentColor?: string}
         const gif = new GifEncoder(width, height, {highWaterMark: 5 * 1024 * 1024})
@@ -177,7 +185,7 @@ export default class Functions {
                 gif.finish()
             } else {
                 const {data} = await pixels(frames[counter])
-                gif.setDelay(10 * delays[counter])
+                gif.setDelay(delays[counter])
                 gif.addFrame(data)
                 counter++
                 addToGif(frames)
@@ -199,7 +207,7 @@ export default class Functions {
         let step = Math.ceil(frames.length / constraint)
         for (let i = 0; i < frames.length; i += step) {
             frameArray.push(await Functions.streamToBuffer(frames[i].getImage()))
-            delayArray.push(frames[i].frameInfo.delay)
+            delayArray.push(frames[i].frameInfo.delay * 10)
         }
         if (options.speed < 1) delayArray = delayArray.map((n) => n / options?.speed!)
         if (options.reverse) {
@@ -211,5 +219,34 @@ export default class Functions {
 
     public static parseTransparentColor = (color: string) => {
         return Number(`0x${color.replace(/^#/, "")}`)
+    }
+
+    public static arrayBufferToBuffer(arrayBuffer: ArrayBuffer) {
+        const buffer = Buffer.alloc(arrayBuffer.byteLength)
+        const array = new Uint8Array(arrayBuffer)
+        for (let i = 0; i < buffer.length; i++) {
+            buffer[i] = array[i]
+        }
+        return buffer
+    }
+
+    public static parsePixivLink = async (link: string) => {
+        const pixiv = await Pixiv.refreshLogin("c-SC58UMg144msd2ed2vNAkMnJAVKPPlik-0HkOPoAw")
+        const illust = await pixiv.illust.get(link)
+        if (illust.type === "ugoira") {
+            const metadata = await pixiv.ugoira.get(illust.id).then((r) => r.ugoira_metadata)
+            const delayArray = metadata.frames.map((f) => f.delay)
+            const arrayBuffer = await fetch(metadata.zip_urls.medium).then((r) => r.arrayBuffer())
+            const zip = await unzipper.Open.buffer(Functions.arrayBufferToBuffer(arrayBuffer))
+            const frameArray: Buffer[] = []
+            for (let i = 0; i < zip.files.length; i++) {
+                frameArray.push(await zip.files[i].buffer())
+            }
+            const {width, height} = await ipcRenderer.invoke("get-width-height", frameArray[0])
+            const buffer = await Functions.encodeGIF(frameArray, delayArray, width, height)
+            return Functions.bufferToBase64(buffer, "gif")
+        } else {
+            return illust.image_urls.large ? illust.image_urls.large : illust.image_urls.medium
+        }
     }
 }

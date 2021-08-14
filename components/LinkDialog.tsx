@@ -68,7 +68,7 @@ const LinkDialog: React.FunctionComponent = (props) => {
                 <div className="link-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                     <div className="link-container">
                         <form className="link-search-bar">
-                            <input type="text" className="link-search-box" ref={searchBox} placeholder="Image link..." spellCheck="false"/>
+                            <input type="text" className="link-search-box" ref={searchBox} placeholder="Pixiv or image link..." spellCheck="false"/>
                             <button onClick={(event) => {event.preventDefault(); link()}} className="link-search-button"><img src={searchIcon} width="20" height="20" className="link-search-icon"/></button>
                         </form>
                     </div>

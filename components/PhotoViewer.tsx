@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react"
-import {ipcRenderer, clipboard, nativeImage, remote, KeyboardEvent} from "electron" 
+import {ipcRenderer, clipboard, nativeImage, remote} from "electron" 
 import ReactCrop from "react-image-crop"
 import path from "path"
 import noImage from "../assets/images/noimage.png"
@@ -88,10 +88,12 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const uploadFile = (event: any) => {
             upload()
         }
-        const openLink = (event: any, link: string) => {
+        const openLink = async (event: any, link: string) => {
             if (link) {
-                setImage(link)
-                ipcRenderer.invoke("update-original-image", link)
+                let img = link
+                if (link.includes("pixiv.net")) img = await functions.parsePixivLink(link)
+                setImage(img)
+                ipcRenderer.invoke("update-original-image", img)
                 ipcRenderer.invoke("set-original-name", null)
             }
         }
@@ -151,7 +153,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (image.startsWith("data:")) {
                 clipboard.writeImage(nativeImage.createFromBuffer(functions.base64ToBuffer(image)))
             } else {
-                clipboard.writeImage(nativeImage.createFromPath(image))
+                clipboard.writeImage(nativeImage.createFromPath(image.replace("file:///", "")))
             }
         }
         const copyAddress = () => {

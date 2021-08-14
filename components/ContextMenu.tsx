@@ -31,6 +31,10 @@ const ContextMenu: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("trigger-paste")
     }
 
+    const getInfo = () => {
+        ipcRenderer.invoke("get-info")
+    }
+
     const saveImage = () => {
         ipcRenderer.invoke("save-img-context")
     }
@@ -45,6 +49,7 @@ const ContextMenu: React.FunctionComponent = (props) => {
             <section ref={contextMenu} className="context-menu" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 <button className="context-button" onClick={() => copy()}>Copy</button>
                 <button className="context-button" onClick={() => paste()}>Paste</button>
+                <button className="context-button" onClick={() => getInfo()}>Get Info</button>
                 <button className="context-button" onClick={() => saveImage()}>Save Image</button>
                 <button className="context-button" onClick={() => copyAddress()}>Copy Address</button>
             </section>

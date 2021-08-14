@@ -33,6 +33,16 @@ const getGIFOptions = () => {
   }) as {transparency: boolean, transparentColor: string, cumulative: boolean}
 }
 
+ipcMain.handle("get-info", () => {
+  window?.webContents.send("close-all-dialogs", "info")
+  window?.webContents.send("show-info-dialog")
+})
+
+ipcMain.handle("get-width-height", async (event, image: any) => {
+  const metadata = await sharp(image).metadata()
+  return {width: metadata.width, height: metadata.height}
+})
+
 ipcMain.handle("get-gif-options", () => {
   return getGIFOptions()
 })
@@ -104,18 +114,43 @@ ipcMain.handle("trigger-accept-action", (event: any, action: string) => {
   window?.webContents.send("trigger-accept-action", action)
 })
 
-ipcMain.handle("get-metadata", async () => {
-  let image = historyStates[historyIndex] as any
+const getMetadata = async (image: any, toBuffer?: boolean) => {
   if (!image) return null
-  let dataBuffer = false
+  let dataURL = false
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
   if (image.startsWith("data:")) {
     image = functions.base64ToBuffer(image)
-    dataBuffer = true
+    dataURL = true
   }
-  const metadata = await sharp(image).metadata()
-  let name = dataBuffer ? "Data URL" : path.basename(image)
-  return {name, width: metadata.width, height: metadata.height, format: metadata.format, size: metadata.size, dpi: metadata.density, frames: metadata.pages, space: metadata.space}
+  let metadata = await sharp(image).metadata()
+  if (metadata.format !== "gif" && toBuffer) {
+    metadata = await sharp(await sharp(image).toBuffer()).metadata()
+  }
+  let name = dataURL ? "Image" : path.basename(image, path.extname(image))
+  const width = metadata.width ? metadata.width : "?"
+  const height = metadata.height ? metadata.height : "?"
+  const dpi = metadata.density ? metadata.density : "?"
+  let size = metadata.size as any
+  if (!size) {
+    try {
+      size = fs.statSync(image).size
+    } catch {
+      size = "?"
+    }
+  }
+  const frames = metadata.pages ? metadata.pages : 1
+  const format = metadata.format ? metadata.format : "?"
+  const space = metadata.space ? metadata.space : "?"
+  return {name, width, height, size, format, dpi, frames, space}
+}
+
+ipcMain.handle("get-original-metadata", async () => {
+  return getMetadata(originalImage, true)
+})
+
+ipcMain.handle("get-metadata", async () => {
+  let image = historyStates[historyIndex] as any
+  return getMetadata(image)
 })
 
 ipcMain.handle("crop", async (event, state: any) => {

@@ -15,6 +15,7 @@ import TintDialog from "./components/TintDialog"
 import ResizeDialog from "./components/ResizeDialog"
 import BinarizeDialog from "./components/BinarizeDialog"
 import GIFDialog from "./components/GIFDialog"
+import InfoDialog from "./components/InfoDialog"
 import "./index.less"
 
 const App = () => {
@@ -31,6 +32,7 @@ const App = () => {
       <TitleBar/>
       <ContextMenu/>
       <VersionDialog/>
+      <InfoDialog/>
       <LinkDialog/>
       <GIFDialog/>
       <BrightnessDialog/>
