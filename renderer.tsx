@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css"
-import React, { useEffect } from "react"
+import React, {useEffect} from "react"
 import ReactDom from "react-dom"
 import TitleBar from "./components/TitleBar"
 import VersionDialog from "./components/VersionDialog"

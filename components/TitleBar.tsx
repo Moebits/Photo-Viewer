@@ -27,6 +27,8 @@ import acceptButton from "../assets/icons/accept.png"
 import acceptButtonHover from "../assets/icons/accept-hover.png"
 import gifButton from "../assets/icons/gif.png"
 import gifButtonHover from "../assets/icons/gif-hover.png"
+import hundredButton from "../assets/icons/100.png"
+import hundredButtonHover from "../assets/icons/100-hover.png"
 import pack from "../package.json"
 import "../styles/titlebar.less"
 
@@ -43,6 +45,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverCancel, setHoverCancel] = useState(false)
     const [hoverAccept, setHoverAccept] = useState(false)
     const [hoverGIF, setHoverGIF] = useState(false)
+    const [hoverHundred, setHoverHundred] = useState(false)
     const [theme, setTheme] = useState("light")
     const [acceptAction, setAcceptAction] = useState(null as any)
 
@@ -148,6 +151,10 @@ const TitleBar: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("show-gif-dialog")
     }
 
+    const resetZoom = () => {
+        ipcRenderer.invoke("reset-zoom")
+    }
+
     return (
         <section className="title-bar">
                 <div className="title-bar-drag-area">
@@ -161,6 +168,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>
                         </> : null}
                         <img src={hoverTheme ? (theme === "light" ? darkButtonHover : lightButtonHover) : (theme === "light" ? darkButton : lightButton)} height="20" width="20" className="title-bar-button theme-button" onClick={() => changeTheme()} onMouseEnter={() => setHoverTheme(true)} onMouseLeave={() => setHoverTheme(false)}/>
+                        {/*<img src={hoverHundred ? hundredButtonHover : hundredButton} height="20" width="20" className="title-bar-button hundred-button" onClick={resetZoom} onMouseEnter={() => setHoverHundred(true)} onMouseLeave={() => setHoverHundred(false)}/>*/}
                         <img src={hoverGIF ? gifButtonHover : gifButton} height="20" width="20" className="title-bar-button gif-button" onClick={gif} onMouseEnter={() => setHoverGIF(true)} onMouseLeave={() => setHoverGIF(false)}/>
                         <img src={hoverPaste ? pasteButtonHover : pasteButton} height="20" width="20" className="title-bar-button paste-button" onClick={paste} onMouseEnter={() => setHoverPaste(true)} onMouseLeave={() => setHoverPaste(false)}/>
                         <img src={hoverLink ? linkButtonHover : linkButton} height="20" width="20" className="title-bar-button link-button" onClick={link} onMouseEnter={() => setHoverLink(true)} onMouseLeave={() => setHoverLink(false)}/>

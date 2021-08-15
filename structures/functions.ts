@@ -4,6 +4,7 @@ import pixels from "image-pixels"
 import gifFrames from "gif-frames"
 import Pixiv from "pixiv.ts"
 import unzipper from "unzipper"
+import axios from "axios"
 import fs from "fs"
 import path from "path"
 
@@ -232,7 +233,13 @@ export default class Functions {
 
     public static parsePixivLink = async (link: string) => {
         const pixiv = await Pixiv.refreshLogin("c-SC58UMg144msd2ed2vNAkMnJAVKPPlik-0HkOPoAw")
-        const illust = await pixiv.illust.get(link)
+        let resolvable = link as string | number
+        if (link.includes("pximg.net")) {
+            const id = path.basename(link).match(/(\d+)(?=_)/)?.[0]
+            resolvable = Number(id)
+        }
+        const illust = await pixiv.illust.get(resolvable)
+        let url = null
         if (illust.type === "ugoira") {
             const metadata = await pixiv.ugoira.get(illust.id).then((r) => r.ugoira_metadata)
             const delayArray = metadata.frames.map((f) => f.delay)
@@ -244,9 +251,16 @@ export default class Functions {
             }
             const {width, height} = await ipcRenderer.invoke("get-width-height", frameArray[0])
             const buffer = await Functions.encodeGIF(frameArray, delayArray, width, height)
-            return Functions.bufferToBase64(buffer, "gif")
+            url = Functions.bufferToBase64(buffer, "gif")
         } else {
-            return illust.image_urls.large ? illust.image_urls.large : illust.image_urls.medium
+            const rawUrl = illust.image_urls.large ? illust.image_urls.large : illust.image_urls.medium
+            url = await Functions.linkToBase64(rawUrl)
         }
+        return {name: `${illust.title}_${illust.id}`, url, siteUrl: `https://www.pixiv.net/en/artworks/${illust.id}`}
+    }
+
+    public static linkToBase64 = async (link: string) => {
+        const arrayBuffer = await axios.get(link, {responseType: "arraybuffer", headers: {referer: "https://www.pixiv.net/"}}).then((r) => r.data)
+        return Functions.bufferToBase64(Functions.arrayBufferToBuffer(arrayBuffer), "png")
     }
 }

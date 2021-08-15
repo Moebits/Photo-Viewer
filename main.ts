@@ -1,4 +1,4 @@
-import {app, BrowserWindow, dialog, globalShortcut, ipcMain, session, webContents, screen} from "electron"
+import {app, BrowserWindow, dialog, globalShortcut, ipcMain, session} from "electron"
 import {autoUpdater} from "electron-updater"
 import Store from "electron-store"
 import * as localShortcut from "electron-shortcuts"
@@ -17,6 +17,7 @@ const store = new Store()
 
 let originalImage = null as any
 let originalName = null as any
+let originalLink = null as any
 let historyStates = [] as string[]
 let historyIndex = -1
 
@@ -32,6 +33,10 @@ const getGIFOptions = () => {
     cumulative: true
   }) as {transparency: boolean, transparentColor: string, cumulative: boolean}
 }
+
+ipcMain.handle("reset-zoom", () => {
+  window?.webContents.send("reset-zoom")
+})
 
 ipcMain.handle("get-info", () => {
   window?.webContents.send("close-all-dialogs", "info")
@@ -57,6 +62,7 @@ ipcMain.handle("gif-effects", async (event: any, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   if (metadata.format === "gif") {
@@ -78,6 +84,14 @@ ipcMain.handle("gif-effects", async (event: any, state: any) => {
 ipcMain.handle("show-gif-dialog", async (event) => {
   window?.webContents.send("close-all-dialogs", "gif")
   window?.webContents.send("show-gif-dialog")
+})
+
+ipcMain.handle("get-original-link", async () => {
+  return originalLink
+})
+
+ipcMain.handle("set-original-link", async (event, link: any) => {
+  originalLink = link
 })
 
 ipcMain.handle("get-original-name", async () => {
@@ -118,9 +132,13 @@ const getMetadata = async (image: any, toBuffer?: boolean) => {
   if (!image) return null
   let dataURL = false
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
-  if (image.startsWith("data:")) {
-    image = functions.base64ToBuffer(image)
-    dataURL = true
+  if (image.startsWith("http")) {
+    image = await functions.linkToBase64(image)
+  } else {
+    if (image.startsWith("data:")) {
+      image = functions.base64ToBuffer(image)
+      dataURL = true
+    }
   }
   let metadata = await sharp(image).metadata()
   if (metadata.format !== "gif" && toBuffer) {
@@ -159,6 +177,7 @@ ipcMain.handle("crop", async (event, state: any) => {
   if (!image) return null
   if (width === 0 || height === 0) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   const cropX = Math.round(metadata.width! / 100 * x)
@@ -193,6 +212,7 @@ ipcMain.handle("rotate", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -239,6 +259,7 @@ ipcMain.handle("resize", async (event, state: any) => {
   if (!image) return null
   if (Number.isNaN(width) || Number.isNaN(height) || !Number(width)|| !Number(height)) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -283,6 +304,7 @@ ipcMain.handle("binarize", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -327,6 +349,7 @@ ipcMain.handle("pixelate", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -379,6 +402,7 @@ ipcMain.handle("blur", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -425,6 +449,7 @@ ipcMain.handle("tint", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -469,6 +494,7 @@ ipcMain.handle("hsl", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -513,6 +539,7 @@ ipcMain.handle("brightness", async (event, state: any) => {
   let image = historyStates[historyIndex] as any
   if (!image) return null
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -610,6 +637,7 @@ ipcMain.handle("undo", async (event) => {
 
 ipcMain.handle("invert", async (event, image: any) => {
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -633,6 +661,7 @@ ipcMain.handle("invert", async (event, image: any) => {
 
 ipcMain.handle("flipY", async (event, image: any) => {
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -656,6 +685,7 @@ ipcMain.handle("flipY", async (event, image: any) => {
 
 ipcMain.handle("flipX", async (event, image: any) => {
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
+  if (image.startsWith("http")) image = await functions.linkToBase64(image)
   if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
   const metadata = await sharp(image).metadata()
   let buffer = null as any
@@ -828,6 +858,12 @@ if (!singleLock) {
     }, window, {strict: true})
     localShortcut.register("Ctrl+V", () => {
       window?.webContents.send("trigger-paste")
+    }, window, {strict: true})
+    localShortcut.register("Ctrl+=", () => {
+      window?.webContents.send("zoom-in")
+    }, window, {strict: true})
+    localShortcut.register("Ctrl+-", () => {
+      window?.webContents.send("zoom-out")
     }, window, {strict: true})
     if (process.env.DEVELOPMENT === "true") {
       globalShortcut.register("Control+Shift+I", () => {

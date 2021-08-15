@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useRef} from "react"
 import {ipcRenderer, clipboard, nativeImage, remote} from "electron" 
 import ReactCrop from "react-image-crop"
 import path from "path"
@@ -40,6 +40,7 @@ import previousButtonHover from "../assets/icons/previous-hover.png"
 import nextButton from "../assets/icons/next.png"
 import nextButtonHover from "../assets/icons/next-hover.png"
 import functions from "../structures/functions"
+import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch";
 import "react-image-crop/dist/ReactCrop.css"
 import "../styles/photoviewer.less"
 
@@ -69,6 +70,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const initialCropState = {unit: "%", x: 0, y: 0, width: 100, height: 100, aspect: undefined}
     const [cropState, setCropState] = useState(initialCropState)
     const [cropEnabled, setCropEnabled] = useState(false)
+    const [zoomScale, setZoomScale] = useState(1)
+    const zoomRef = useRef(null) as any
 
     useEffect(() => {
         const getOpenedFile = async () => {
@@ -78,9 +81,9 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             } else {
                 setImage(noImage)
                 ipcRenderer.invoke("update-original-image", noImage)
+                resetZoom()
             }
         }
-        ipcRenderer.invoke("update-original-image", image)
         getOpenedFile()
         const openFile = (event: any, file: string) => {
             if (file) upload(file)
@@ -91,10 +94,18 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const openLink = async (event: any, link: string) => {
             if (link) {
                 let img = link
-                if (link.includes("pixiv.net")) img = await functions.parsePixivLink(link)
+                if (link.includes("pixiv.net") || link.includes("pximg.net")) {
+                    const {name, url, siteUrl} = await functions.parsePixivLink(link)
+                    ipcRenderer.invoke("set-original-name", name)
+                    ipcRenderer.invoke("set-original-link", siteUrl)
+                    img = url
+                } else {
+                    ipcRenderer.invoke("set-original-link", img)
+                    ipcRenderer.invoke("set-original-name", null)
+                }
                 setImage(img)
                 ipcRenderer.invoke("update-original-image", img)
-                ipcRenderer.invoke("set-original-name", null)
+                resetZoom()
             }
         }
         const triggerPaste = () => {
@@ -104,6 +115,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             setImage(base64)
             ipcRenderer.invoke("update-original-image", base64)
             ipcRenderer.invoke("set-original-name", null)
+            ipcRenderer.invoke("set-original-link", null)
+            resetZoom()
         }
         const updateImage = (event: any, base64: string) => {
             if (base64) setImage(base64)
@@ -129,6 +142,9 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         ipcRenderer.on("apply-binarize", binarize)
         ipcRenderer.on("trigger-undo", triggerUndo)
         ipcRenderer.on("trigger-redo", triggerRedo)
+        ipcRenderer.on("zoom-in", zoomIn)
+        ipcRenderer.on("zoom-out", zoomOut)
+        ipcRenderer.on("reset-zoom", resetZoom)
         return () => {
             ipcRenderer.removeListener("open-file", openFile)
             ipcRenderer.removeListener("upload-file", openFile)
@@ -145,6 +161,9 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             ipcRenderer.removeListener("apply-binarize", binarize)
             ipcRenderer.removeListener("trigger-undo", triggerUndo)
             ipcRenderer.removeListener("trigger-redo", triggerRedo)
+            ipcRenderer.removeListener("zoom-in", zoomIn)
+            ipcRenderer.removeListener("zoom-out", zoomOut)
+            ipcRenderer.removeListener("reset-zoom", resetZoom)
         }
     }, [])
 
@@ -156,8 +175,14 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 clipboard.writeImage(nativeImage.createFromPath(image.replace("file:///", "")))
             }
         }
-        const copyAddress = () => {
-            clipboard.writeText(image)
+        const copyAddress = async () => {
+            const originalLink = await ipcRenderer.invoke("get-original-link")
+            if (originalLink) {
+                clipboard.writeText(originalLink)
+            } else {
+                const img = await ipcRenderer.invoke("get-original-image")
+                clipboard.writeText(img)
+            }
         }
         ipcRenderer.on("copy-image", copyImage)
         ipcRenderer.on("copy-address", copyAddress)
@@ -190,6 +215,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (event.key === "Escape") {
                 if (cropEnabled) crop("cancel")
                 ipcRenderer.invoke("escape-pressed")
+                resetZoom()
             }
         }
         ipcRenderer.on("accept-action-response", acceptActionResponse)
@@ -211,6 +237,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         }
         setImage(newImg)
         ipcRenderer.invoke("update-original-image", newImg)
+        ipcRenderer.invoke("set-original-link", null)
+        resetZoom()
     }
 
     const brightness = async (event?: any, state?: any) => {
@@ -360,6 +388,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         if (previous) {
             setImage(previous)
             ipcRenderer.invoke("update-original-image", previous)
+            resetZoom()
         }
     }
 
@@ -368,7 +397,22 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         if (next) {
             setImage(next)
             ipcRenderer.invoke("update-original-image", next)
+            resetZoom()
         }
+    }
+
+    const resetZoom = () => {
+        zoomRef?.current!.resetTransform(0)
+    }
+
+    const zoomIn = () => {
+        console.log(zoomRef?.current)
+        zoomRef?.current!.zoomIn(0.5)
+    }
+
+    const zoomOut = () => {
+        console.log(zoomRef?.current)
+        zoomRef?.current!.zoomOut(0.5)
     }
 
     return (
@@ -395,9 +439,13 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 <img className="adjustment-img" src={saveHover ? saveButtonHover : saveButton} onClick={() => save()} width={30} height={30} onMouseEnter={() => setSaveHover(true)} onMouseLeave={() => setSaveHover(false)}/>
                 <img className="adjustment-img" src={resetHover ? resetButtonHover : resetButton} onClick={() => reset()} width={30} height={30} onMouseEnter={() => setResetHover(true)} onMouseLeave={() => setResetHover(false)}/>
             </div>
-            <div className="photo-container">
-                <ReactCrop className="photo" src={image} crop={cropState as any} onChange={(crop, percentCrop) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
-            </div>
+            <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} onZoomStop={(ref) => setZoomScale(ref.state.scale)} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} alignmentAnimation={{disabled: true}} doubleClick={{mode: "reset", animationTime: 0}}>
+                <TransformComponent>
+                    <div className="photo-container">
+                        <ReactCrop className="photo" src={image} scale={zoomScale} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
+                    </div>
+                </TransformComponent>
+            </TransformWrapper>
         </main>
     )
 }

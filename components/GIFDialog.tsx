@@ -137,7 +137,7 @@ const GIFDialog: React.FunctionComponent = (props) => {
                 <div className="gif-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                     <div className="gif-container">
                         <div className="gif-title-container">
-                            <p className="gif-title">GIF Effects</p>
+                            <p className="gif-title">GIF Options</p>
                         </div>
                         <div className="gif-row-container">
                             <div className="gif-row">
