@@ -223,6 +223,7 @@ ipcMain.handle("rotate", async (event, state: any) => {
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
       const newFrame = await sharp(frameArray[i])
+      .png()
       .rotate(degrees, {background: {r: 0, b: 0, g: 0, alpha: 0}})
       .toBuffer()
       newFrameArray.push(newFrame)
@@ -232,6 +233,7 @@ ipcMain.handle("rotate", async (event, state: any) => {
     buffer = await functions.encodeGIF(newFrameArray, delayArray, newMeta.width!, newMeta.height!, {transparentColor})
   } else {
     buffer = await sharp(image)
+      .png()
       .rotate(degrees, {background: {r: 0, b: 0, g: 0, alpha: 0}})
       .toBuffer()
   }
