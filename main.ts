@@ -648,13 +648,15 @@ ipcMain.handle("invert", async (event, image: any) => {
     const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
     const newFrameArray = [] as Buffer[]
     for (let i = 0; i < frameArray.length; i++) {
-      const newFrame = await sharp(frameArray[i]).negate().toBuffer()
+      // @ts-ignore
+      const newFrame = await sharp(frameArray[i]).negate({alpha: false}).toBuffer()
       newFrameArray.push(newFrame)
     }
     const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
     buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
   } else {
-    buffer = await sharp(image).negate().toBuffer()
+    // @ts-ignore
+    buffer = await sharp(image).negate({alpha: false}).toBuffer()
   }
   const base64 = functions.bufferToBase64(buffer, metadata.format ?? "png")
   updateHistoryState(base64)

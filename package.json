@@ -127,7 +127,7 @@
     "react-draggable": "^4.4.3",
     "react-image-crop": "github:Tenpi/react-image-crop#scale",
     "react-zoom-pan-pinch": "^2.1.3",
-    "sharp": "^0.28.3",
+    "sharp": "github:lovell/sharp#circle",
     "unzipper": "^0.10.11"
   }
 }
