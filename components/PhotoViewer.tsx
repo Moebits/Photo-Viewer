@@ -76,7 +76,6 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const [rotateDegrees, setRotateDegrees] = useState(0)
     const [rotateEnabled, setRotateEnabled] = useState(false)
     const zoomRef = useRef(null) as any
-    const rotateContainer = useRef(null) as React.RefObject<HTMLDivElement>
 
     useEffect(() => {
         const getOpenedFile = async () => {
@@ -238,17 +237,18 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (event.code === "Space") {
                 const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                 if (selection?.style.opacity === "1") setCropEnabled(false)
+                document.documentElement.style.setProperty("cursor", "grab", "important")
             }
             if (event.key === "r") {
                 if (rotateEnabled) {
                     const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                     if (selection?.style.opacity === "1") setCropEnabled(true)
-                    rotateContainer.current?.style.setProperty("cursor", "default")
+                    document.documentElement.style.setProperty("cursor", "default")
                     setRotateEnabled(false)
                 } else {
                     const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                     if (selection?.style.opacity === "1") setCropEnabled(false)
-                    rotateContainer.current?.style.setProperty("cursor", "row-resize", "important")
+                    document.documentElement.style.setProperty("cursor", "row-resize", "important")
                     setRotateEnabled(true)
                 }
             }
@@ -257,6 +257,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (event.code === "Space") {
                 const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                 if (selection?.style.opacity === "1") setCropEnabled(true)
+                document.documentElement.style.setProperty("cursor", "default")
             }
         }
         const mouseMove = (event: MouseEvent) => {
@@ -282,7 +283,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const onClick = () => {
             const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
             if (selection?.style.opacity === "1") setCropEnabled(true)
-            rotateContainer.current?.style.setProperty("cursor", "default")
+            document.documentElement.style.setProperty("cursor", "default")
             setRotateEnabled(false)
         }
         ipcRenderer.on("accept-action-response", acceptActionResponse)
@@ -521,7 +522,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             </div>
             <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} onZoomStop={(ref) => setZoomScale(ref.state.scale)} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} alignmentAnimation={{disabled: true}} doubleClick={{mode: "reset", animationTime: 0}}>
                 <TransformComponent>
-                    <div className="rotate-container" ref={rotateContainer} style={{transform: `rotate(${rotateDegrees}deg)`}}>
+                    <div className="rotate-container" style={{transform: `rotate(${rotateDegrees}deg)`}}>
                         <div className="photo-container">
                             <ReactCrop className="photo" src={image} scale={zoomScale} rotate={rotateDegrees} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
                         </div>
