@@ -36,7 +36,7 @@ const ContextMenu: React.FunctionComponent = (props) => {
     }
 
     const saveImage = () => {
-        ipcRenderer.invoke("save-img-context")
+        ipcRenderer.invoke("save-img")
     }
 
     const copyAddress = () => {

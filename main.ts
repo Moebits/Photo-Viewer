@@ -34,8 +34,8 @@ const getGIFOptions = () => {
   }) as {transparency: boolean, transparentColor: string, cumulative: boolean}
 }
 
-ipcMain.handle("reset-zoom", () => {
-  window?.webContents.send("reset-zoom")
+ipcMain.handle("reset-bounds", () => {
+  window?.webContents.send("reset-bounds")
 })
 
 ipcMain.handle("get-info", () => {
@@ -728,8 +728,8 @@ ipcMain.handle("save-dialog", async (event, defaultPath: string) => {
   return save.filePath ? save.filePath : null
 })
 
-ipcMain.handle("save-img-context", async (event) => {
-  window?.webContents.send("save-img-context")
+ipcMain.handle("save-img", async (event) => {
+  window?.webContents.send("save-img")
 })
 
 ipcMain.handle("copy-address", async (event) => {
@@ -862,6 +862,12 @@ if (!singleLock) {
     }, window, {strict: true})
     localShortcut.register("Ctrl+V", () => {
       window?.webContents.send("trigger-paste")
+    }, window, {strict: true})
+    localShortcut.register("Ctrl+S", () => {
+      window?.webContents.send("save-img")
+    }, window, {strict: true})
+    localShortcut.register("Ctrl+O", () => {
+      window?.webContents.send("upload-file")
     }, window, {strict: true})
     localShortcut.register("Ctrl+=", () => {
       window?.webContents.send("zoom-in")

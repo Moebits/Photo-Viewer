@@ -151,8 +151,8 @@ const TitleBar: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("show-gif-dialog")
     }
 
-    const resetZoom = () => {
-        ipcRenderer.invoke("reset-zoom")
+    const resetBounds = () => {
+        ipcRenderer.invoke("reset-bounds")
     }
 
     return (
@@ -168,7 +168,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>
                         </> : null}
                         <img src={hoverTheme ? (theme === "light" ? darkButtonHover : lightButtonHover) : (theme === "light" ? darkButton : lightButton)} height="20" width="20" className="title-bar-button theme-button" onClick={() => changeTheme()} onMouseEnter={() => setHoverTheme(true)} onMouseLeave={() => setHoverTheme(false)}/>
-                        {/*<img src={hoverHundred ? hundredButtonHover : hundredButton} height="20" width="20" className="title-bar-button hundred-button" onClick={resetZoom} onMouseEnter={() => setHoverHundred(true)} onMouseLeave={() => setHoverHundred(false)}/>*/}
+                        {/*<img src={hoverHundred ? hundredButtonHover : hundredButton} height="20" width="20" className="title-bar-button hundred-button" onClick={resetBounds} onMouseEnter={() => setHoverHundred(true)} onMouseLeave={() => setHoverHundred(false)}/>*/}
                         <img src={hoverGIF ? gifButtonHover : gifButton} height="20" width="20" className="title-bar-button gif-button" onClick={gif} onMouseEnter={() => setHoverGIF(true)} onMouseLeave={() => setHoverGIF(false)}/>
                         <img src={hoverPaste ? pasteButtonHover : pasteButton} height="20" width="20" className="title-bar-button paste-button" onClick={paste} onMouseEnter={() => setHoverPaste(true)} onMouseLeave={() => setHoverPaste(false)}/>
                         <img src={hoverLink ? linkButtonHover : linkButton} height="20" width="20" className="title-bar-button link-button" onClick={link} onMouseEnter={() => setHoverLink(true)} onMouseLeave={() => setHoverLink(false)}/>

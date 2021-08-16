@@ -19,6 +19,19 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - Open next and previous files (from the file system)
 - Save images and GIFs with the applied effects
 
+### Keyboard Shortcuts:
+- R: Rotate
+- Space: Pan over cropping area
+- Escape: Reset rotation
+- Ctrl Z: Undo
+- Ctrl Shift Z: Redo
+- Ctrl +: Zoom in
+- Ctrl -: Zoom out
+- Ctrl C: Copy
+- Ctrl V: Paste
+- Ctrl S: Save image
+- Ctrl O: Open image
+
 ### Installation
 
 Download the latest exe installer from the [releases](https://github.com/Tenpi/Photo-Viewer/releases) tab. Updates can be installed automatically.

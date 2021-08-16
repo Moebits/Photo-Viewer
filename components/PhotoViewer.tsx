@@ -39,12 +39,15 @@ import previousButton from "../assets/icons/previous.png"
 import previousButtonHover from "../assets/icons/previous-hover.png"
 import nextButton from "../assets/icons/next.png"
 import nextButtonHover from "../assets/icons/next-hover.png"
+import rotateCursor from "../assets/icons/rotate-cursor.png"
 import functions from "../structures/functions"
-import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch";
+import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
 import "react-image-crop/dist/ReactCrop.css"
 import "../styles/photoviewer.less"
 
 const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"]
+
+let oldY = 0
 
 const PhotoViewer: React.FunctionComponent = (props) => {
     const [brightnessHover, setBrightnessHover] = useState(false)
@@ -71,6 +74,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     const [cropState, setCropState] = useState(initialCropState)
     const [cropEnabled, setCropEnabled] = useState(false)
     const [zoomScale, setZoomScale] = useState(1)
+    const [rotateDegrees, setRotateDegrees] = useState(0)
+    const [rotateEnabled, setRotateEnabled] = useState(false)
     const zoomRef = useRef(null) as any
 
     useEffect(() => {
@@ -82,6 +87,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 setImage(noImage)
                 ipcRenderer.invoke("update-original-image", noImage)
                 resetZoom()
+                resetRotation()
             }
         }
         getOpenedFile()
@@ -106,6 +112,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 setImage(img)
                 ipcRenderer.invoke("update-original-image", img)
                 resetZoom()
+                resetRotation()
             }
         }
         const triggerPaste = () => {
@@ -117,6 +124,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             ipcRenderer.invoke("set-original-name", null)
             ipcRenderer.invoke("set-original-link", null)
             resetZoom()
+            resetRotation()
         }
         const updateImage = (event: any, base64: string) => {
             if (base64) setImage(base64)
@@ -126,6 +134,13 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         }
         const triggerRedo = () => {
             redo()
+        }
+        const resetBounds = () => {
+            resetZoom()
+            resetRotation()
+        }
+        const doubleClick = () => {
+            resetRotation()
         }
         ipcRenderer.on("open-file", openFile)
         ipcRenderer.on("open-link", openLink)
@@ -144,7 +159,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         ipcRenderer.on("trigger-redo", triggerRedo)
         ipcRenderer.on("zoom-in", zoomIn)
         ipcRenderer.on("zoom-out", zoomOut)
-        ipcRenderer.on("reset-zoom", resetZoom)
+        ipcRenderer.on("reset-bounds", () => resetBounds)
+        document.addEventListener("dblclick", doubleClick)
         return () => {
             ipcRenderer.removeListener("open-file", openFile)
             ipcRenderer.removeListener("upload-file", openFile)
@@ -163,7 +179,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             ipcRenderer.removeListener("trigger-redo", triggerRedo)
             ipcRenderer.removeListener("zoom-in", zoomIn)
             ipcRenderer.removeListener("zoom-out", zoomOut)
-            ipcRenderer.removeListener("reset-zoom", resetZoom)
+            ipcRenderer.removeListener("reset-bounds", () => resetBounds)
+            document.removeEventListener("dblclick", doubleClick)
         }
     }, [])
 
@@ -186,11 +203,11 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         }
         ipcRenderer.on("copy-image", copyImage)
         ipcRenderer.on("copy-address", copyAddress)
-        ipcRenderer.on("save-img-context", save)
+        ipcRenderer.on("save-img", save)
         return () => {
             ipcRenderer.removeListener("copy-image", copyImage)
             ipcRenderer.removeListener("copy-address", copyAddress)
-            ipcRenderer.removeListener("save-img-context", save)
+            ipcRenderer.removeListener("save-img", save)
         }
     }, [image])
 
@@ -215,14 +232,67 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             if (event.key === "Escape") {
                 if (cropEnabled) crop("cancel")
                 ipcRenderer.invoke("escape-pressed")
-                resetZoom()
+                // resetZoom()
+                resetRotation()
             }
+            if (event.code === "Space") {
+                const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
+                if (selection?.style.opacity === "1") setCropEnabled(false)
+            }
+            if (event.key === "r") {
+                if (rotateEnabled) {
+                    const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
+                    if (selection?.style.opacity === "1") setCropEnabled(true)
+                    setRotateEnabled(false)
+                } else {
+                    const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
+                    if (selection?.style.opacity === "1") setCropEnabled(false)
+                    setRotateEnabled(true)
+                }
+            }
+        }
+        const keyUp = (event: globalThis.KeyboardEvent) => {
+            if (event.code === "Space") {
+                const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
+                if (selection?.style.opacity === "1") setCropEnabled(true)
+            }
+        }
+        const mouseMove = (event: MouseEvent) => {
+                if (rotateEnabled) {
+                    if (event.pageY > oldY) {
+                        // Up
+                        setRotateDegrees((prev) => {
+                            const newDegrees = prev - 3
+                            if (newDegrees < -180) return 180
+                            return newDegrees
+                        })
+                    } else if (event.pageY < oldY) {
+                        // Down
+                        setRotateDegrees((prev) => {
+                            const newDegrees = prev + 3
+                            if (newDegrees > 180) return -180
+                            return newDegrees
+                        })
+                    }
+                    oldY = event.pageY
+                }
+        }
+        const onClick = () => {
+            const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
+            if (selection?.style.opacity === "1") setCropEnabled(true)
+            setRotateEnabled(false)
         }
         ipcRenderer.on("accept-action-response", acceptActionResponse)
         document.addEventListener("keydown", keyDown)
+        document.addEventListener("keyup", keyUp)
+        document.addEventListener("mousemove", mouseMove)
+        document.addEventListener("click", onClick)
         return () => {
             ipcRenderer.removeListener("accept-action-response", acceptActionResponse)
             document.removeEventListener("keydown", keyDown)
+            document.removeEventListener("keyup", keyUp)
+            document.removeEventListener("mousemove", mouseMove)
+            document.removeEventListener("click", onClick)
         }
     })
 
@@ -239,6 +309,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("update-original-image", newImg)
         ipcRenderer.invoke("set-original-link", null)
         resetZoom()
+        resetRotation()
     }
 
     const brightness = async (event?: any, state?: any) => {
@@ -358,7 +429,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
 
     const save = async () => {
         let defaultPath = await ipcRenderer.invoke("get-original-image")
-        if (!defaultPath.startsWith("file:///")) {
+        if (defaultPath.startsWith("data:") || defaultPath.startsWith("http")) {
             let name = null as any
             if (defaultPath.startsWith("data:")) {
                 const originalName = await ipcRenderer.invoke("get-original-name")
@@ -389,6 +460,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             setImage(previous)
             ipcRenderer.invoke("update-original-image", previous)
             resetZoom()
+            resetRotation()
         }
     }
 
@@ -398,11 +470,16 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             setImage(next)
             ipcRenderer.invoke("update-original-image", next)
             resetZoom()
+            resetRotation()
         }
     }
 
     const resetZoom = () => {
         zoomRef?.current!.resetTransform(0)
+    }
+
+    const resetRotation = () => {
+        setRotateDegrees(0)
     }
 
     const zoomIn = () => {
@@ -441,8 +518,8 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             </div>
             <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} onZoomStop={(ref) => setZoomScale(ref.state.scale)} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} alignmentAnimation={{disabled: true}} doubleClick={{mode: "reset", animationTime: 0}}>
                 <TransformComponent>
-                    <div className="photo-container">
-                        <ReactCrop className="photo" src={image} scale={zoomScale} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
+                    <div className="photo-container" style={{transform: `rotate(${rotateDegrees}deg)`, cursor: rotateEnabled ? "row-resize !important" : "default"}}>
+                        <ReactCrop className="photo" src={image} scale={zoomScale} rotate={rotateDegrees} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
                     </div>
                 </TransformComponent>
             </TransformWrapper>
