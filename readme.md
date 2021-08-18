@@ -23,6 +23,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - R: Rotate
 - Space: Pan over cropping area
 - Escape: Reset rotation
+- Double Click: Reset rotation, zoom, and pan
 - Ctrl Z: Undo
 - Ctrl Shift Z: Redo
 - Ctrl +: Zoom in
