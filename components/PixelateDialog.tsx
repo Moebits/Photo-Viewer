@@ -57,9 +57,10 @@ const PixelateDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = () => {
+    const closeAndReset = (noRevert?: boolean) => {
         setVisible(false)
         setState(initialState)
+        if (noRevert) return
         setTimeout(() => {
             ipcRenderer.invoke("revert-to-last-state")
         }, 100)
@@ -75,7 +76,7 @@ const PixelateDialog: React.FunctionComponent = (props) => {
         if (button === "accept") {
             ipcRenderer.invoke("apply-pixelate", state)
         }
-        closeAndReset()
+        closeAndReset(button === "accept")
     }
 
     if (visible) {

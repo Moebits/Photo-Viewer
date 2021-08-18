@@ -13,7 +13,8 @@ const ResizeDialog: React.FunctionComponent = (props) => {
         height: 0,
         originalWidth: 0,
         originalHeight: 0,
-        link: true
+        link: true,
+        percent: false
     }
     const [state, setState] = useState(initialState)
     const [visible, setVisible] = useState(false)
@@ -27,9 +28,15 @@ const ResizeDialog: React.FunctionComponent = (props) => {
                 if (newState === false) closeAndReset()
                 if (newState === true) {
                     ipcRenderer.invoke("get-metadata").then((metadata: any) => {
-                        setState((prev) => {
-                            return {...prev, width: metadata.width, height: metadata.height, originalWidth: metadata.width, originalHeight: metadata.height}
-                        })
+                        if (metadata.length > 1) {
+                            setState((prev) => {
+                                return {...prev, width: 100, height: 100, originalWidth: 100, originalHeight: 100, percent: true}
+                            })
+                        } else {
+                            setState((prev) => {
+                                return {...prev, width: metadata[0].width, height: metadata[0].height, originalWidth: metadata[0].width, originalHeight: metadata[0].height}
+                            })
+                        }
                     })
                 }
                 return newState
@@ -67,14 +74,15 @@ const ResizeDialog: React.FunctionComponent = (props) => {
                 setState((prev) => {
                     return {...prev, width: newState.width, height: newState.height}
                 })
-                ipcRenderer.invoke("apply-resize", {...state, width: newState.width, height: newState.height, realTime: true})
+                ipcRenderer.invoke("apply-resize", {...state, width: newState.width, height: newState.height, percent: state.percent, realTime: true})
                 break
         }
     }
 
-    const closeAndReset = () => {
+    const closeAndReset = (noRevert?: boolean) => {
         setVisible(false)
         setState(initialState)
+        if (noRevert) return
         setTimeout(() => {
             ipcRenderer.invoke("revert-to-last-state")
         }, 100)
@@ -90,7 +98,7 @@ const ResizeDialog: React.FunctionComponent = (props) => {
         if (button === "accept") {
                 ipcRenderer.invoke("apply-resize", state)
         }
-        closeAndReset()
+        closeAndReset(button === "accept")
     }
 
     const changeWidth = (value?: number | string, newLink?: boolean) => {
@@ -155,11 +163,11 @@ const ResizeDialog: React.FunctionComponent = (props) => {
                         </div>
                         <div className="resize-row-container">
                             <div className="resize-row">
-                                <p className="resize-text">Width: </p>
+                                <p className="resize-text">Width{state.percent ? " %" : ""}: </p>
                                 <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeWidth(event.target.value)} value={state.width} onKeyDown={widthKey}/>
                             </div>
                             <div className="resize-row">
-                                <p className="resize-text">Height: </p>
+                                <p className="resize-text">Height{state.percent ? " %" : ""}: </p>
                                 <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeHeight(event.target.value)} value={state.height} onKeyDown={heightKey}/>
                             </div>
                             <div className="resize-chain-container">

@@ -8,7 +8,7 @@ const HSLDialog: React.FunctionComponent = (props) => {
     const initialState = {
         hue: 0,
         saturation: 1,
-        lightness: 1
+        lightness: 0
     }
     const [state, setState] = useState(initialState)
     const [visible, setVisible] = useState(false)
@@ -71,9 +71,10 @@ const HSLDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = () => {
+    const closeAndReset = (noRevert?: boolean) => {
         setVisible(false)
         setState(initialState)
+        if (noRevert) return
         setTimeout(() => {
             ipcRenderer.invoke("revert-to-last-state")
         }, 100)
@@ -89,7 +90,7 @@ const HSLDialog: React.FunctionComponent = (props) => {
         if (button === "accept") {
             ipcRenderer.invoke("apply-hsl", state)
         }
-        closeAndReset()
+        closeAndReset(button === "accept")
     }
 
     if (visible) {
@@ -112,7 +113,7 @@ const HSLDialog: React.FunctionComponent = (props) => {
                             </div>
                             <div className="hsl-row">
                                 <p className="hsl-text">Lightness: </p>
-                                <Slider className="hsl-slider" onChange={(value) => {changeState("lightness", value)}} min={0.5} max={1.5} step={0.1} value={state.lightness}/>
+                                <Slider className="hsl-slider" onChange={(value) => {changeState("lightness", value)}} min={-100} max={100} step={1} value={state.lightness}/>
                             </div>
                         </div>
                         <div className="hsl-button-container">

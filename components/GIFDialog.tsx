@@ -97,9 +97,6 @@ const GIFDialog: React.FunctionComponent = (props) => {
     const closeAndReset = () => {
         setVisible(false)
         setState(initialState)
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {

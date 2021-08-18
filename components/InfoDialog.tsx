@@ -1,4 +1,4 @@
-import {ipcRenderer} from "electron"
+import {ipcRenderer, remote} from "electron"
 import Draggable from "react-draggable"
 import React, {useEffect, useState} from "react"
 import "../styles/infodialog.less"
@@ -20,18 +20,24 @@ const InfoDialog: React.FunctionComponent = (props) => {
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showinfoDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) close()
-                if (newState === true) {
-                    ipcRenderer.invoke("get-original-metadata").then((info) => {
+        const showinfoDialog = (event: any, image: string) => {
+            setVisible(() => {
+                ipcRenderer.invoke("get-metadata").then((info) => {
+                    if (info.length > 1) {
+                        console.log(info)
+                        console.log(image)
+                        const i = info.findIndex((i: any) => functions.pathEqual(i.image, image))
+                        if (i === -1) return close()
                         setState((prev) => {
-                            return {...prev, name: info.name, width: info.width, height: info.height, format: info.format, size: info.size, dpi: info.dpi, frames: info.frames, space: info.space}
+                            return {...prev, name: info[i].name, width: info[i].width, height: info[i].height, format: info[i].format, size: info[i].size, dpi: info[i].dpi, frames: info[i].frames, space: info[i].space}
                         })
-                    })
-                }
-                return newState
+                    } else {
+                        setState((prev) => {
+                            return {...prev, name: info[0].name, width: info[0].width, height: info[0].height, format: info[0].format, size: info[0].size, dpi: info[0].dpi, frames: info[0].frames, space: info[0].space}
+                        })
+                    }
+                })
+                return true
             })
         }
         const closeAllDialogs = (event: any, ignore: any) => {
@@ -46,7 +52,10 @@ const InfoDialog: React.FunctionComponent = (props) => {
     }, [])
 
     const close = () => {
-        if (!hover) setVisible(false)
+        if (!hover) {
+            setVisible(false)
+            setState(initialState)
+        }
     }
 
     if (visible) {

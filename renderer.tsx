@@ -16,6 +16,8 @@ import ResizeDialog from "./components/ResizeDialog"
 import BinarizeDialog from "./components/BinarizeDialog"
 import GIFDialog from "./components/GIFDialog"
 import InfoDialog from "./components/InfoDialog"
+import BulkSaveDialog from "./components/BulkSaveDialog"
+import CropDialog from "./components/CropDialog"
 import "./index.less"
 
 const App = () => {
@@ -43,6 +45,8 @@ const App = () => {
       <TintDialog/>
       <ResizeDialog/>
       <BinarizeDialog/>
+      <CropDialog/>
+      <BulkSaveDialog/>
       <PhotoViewer/>
     </main>
   )

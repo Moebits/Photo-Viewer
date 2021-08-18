@@ -263,4 +263,24 @@ export default class Functions {
         const arrayBuffer = await axios.get(link, {responseType: "arraybuffer", headers: {referer: "https://www.pixiv.net/"}}).then((r) => r.data)
         return Functions.bufferToBase64(Functions.arrayBufferToBuffer(arrayBuffer), "png")
     }
+
+    public static imageAtCursor = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        const images = document.querySelectorAll(".bulk-img") as NodeListOf<HTMLImageElement>
+        let found = null as any
+        images.forEach((i) => {
+            const rect = i.getBoundingClientRect()
+            if (event.pageX > rect.left && event.pageX < rect.right && event.pageY > rect.top && event.pageY < rect.bottom) {
+                found = i
+            }
+        })
+        return found ? found.src : null
+    }
+
+    public static pathEqual = (path1: string, path2: string) => {
+        return path.normalize(decodeURIComponent(path1.replace("file:///", ""))) === path.normalize(decodeURIComponent(path2.replace("file:///", "")))
+    }
+
+    public static clamp = (num: number, min: number, max: number) => {
+        return Math.min(Math.max(Number(num), min), max)
+    }
 }

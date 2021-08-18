@@ -29,6 +29,8 @@ import gifButton from "../assets/icons/gif.png"
 import gifButtonHover from "../assets/icons/gif-hover.png"
 import hundredButton from "../assets/icons/100.png"
 import hundredButtonHover from "../assets/icons/100-hover.png"
+import bulkButton from "../assets/icons/bulk.png"
+import bulkButtonHover from "../assets/icons/bulk-hover.png"
 import pack from "../package.json"
 import "../styles/titlebar.less"
 
@@ -46,6 +48,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverAccept, setHoverAccept] = useState(false)
     const [hoverGIF, setHoverGIF] = useState(false)
     const [hoverHundred, setHoverHundred] = useState(false)
+    const [hoverBulk, setHoverBulk] = useState(false)
     const [theme, setTheme] = useState("light")
     const [acceptAction, setAcceptAction] = useState(null as any)
 
@@ -155,6 +158,10 @@ const TitleBar: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("reset-bounds")
     }
 
+    const bulk = () => {
+        ipcRenderer.invoke("bulk-process")
+    }
+
     return (
         <section className="title-bar">
                 <div className="title-bar-drag-area">
@@ -168,6 +175,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>
                         </> : null}
                         <img src={hoverTheme ? (theme === "light" ? darkButtonHover : lightButtonHover) : (theme === "light" ? darkButton : lightButton)} height="20" width="20" className="title-bar-button theme-button" onClick={() => changeTheme()} onMouseEnter={() => setHoverTheme(true)} onMouseLeave={() => setHoverTheme(false)}/>
+                        {/*<img src={hoverBulk ? bulkButtonHover : bulkButton} height="20" width="20" className="title-bar-button bulk-button" onClick={bulk} onMouseEnter={() => setHoverBulk(true)} onMouseLeave={() => setHoverBulk(false)}/>*/}
                         {/*<img src={hoverHundred ? hundredButtonHover : hundredButton} height="20" width="20" className="title-bar-button hundred-button" onClick={resetBounds} onMouseEnter={() => setHoverHundred(true)} onMouseLeave={() => setHoverHundred(false)}/>*/}
                         <img src={hoverGIF ? gifButtonHover : gifButton} height="20" width="20" className="title-bar-button gif-button" onClick={gif} onMouseEnter={() => setHoverGIF(true)} onMouseLeave={() => setHoverGIF(false)}/>
                         <img src={hoverPaste ? pasteButtonHover : pasteButton} height="20" width="20" className="title-bar-button paste-button" onClick={paste} onMouseEnter={() => setHoverPaste(true)} onMouseLeave={() => setHoverPaste(false)}/>

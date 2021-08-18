@@ -1,5 +1,7 @@
-import {ipcRenderer, clipboard} from "electron"
+import {ipcRenderer, clipboard, remote} from "electron"
+import EventEmitter from "events"
 import React, {useEffect, useState, useRef} from "react"
+import functions from "../structures/functions"
 import "../styles/contextmenu.less"
 
 const ContextMenu: React.FunctionComponent = (props) => {
@@ -18,12 +20,13 @@ const ContextMenu: React.FunctionComponent = (props) => {
         }
     }, [])
 
-    const copy = () => {
+    const copy = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         const selectedText = window.getSelection()?.toString().trim()
         if (selectedText) {
             clipboard.writeText(selectedText)
         } else {
-            ipcRenderer.invoke("copy-image")
+            const image = functions.imageAtCursor(event)
+            ipcRenderer.invoke("copy-image", image)
         }
     }
 
@@ -31,27 +34,30 @@ const ContextMenu: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("trigger-paste")
     }
 
-    const getInfo = () => {
-        ipcRenderer.invoke("get-info")
+    const getInfo = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        const image = functions.imageAtCursor(event)
+        console.log(image)
+        ipcRenderer.invoke("get-info", image)
     }
 
     const saveImage = () => {
         ipcRenderer.invoke("save-img")
     }
 
-    const copyAddress = () => {
-        ipcRenderer.invoke("copy-address")
+    const copyAddress = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        const image = functions.imageAtCursor(event)
+        ipcRenderer.invoke("copy-address", image)
     }
 
 
     if (visible) {
         return (
             <section ref={contextMenu} className="context-menu" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                <button className="context-button" onClick={() => copy()}>Copy</button>
+                <button className="context-button" onClick={(event) => copy(event)}>Copy</button>
                 <button className="context-button" onClick={() => paste()}>Paste</button>
-                <button className="context-button" onClick={() => getInfo()}>Get Info</button>
+                <button className="context-button" onClick={(event) => getInfo(event)}>Get Info</button>
                 <button className="context-button" onClick={() => saveImage()}>Save Image</button>
-                <button className="context-button" onClick={() => copyAddress()}>Copy Address</button>
+                <button className="context-button" onClick={(event) => copyAddress(event)}>Copy Address</button>
             </section>
         )
     }
