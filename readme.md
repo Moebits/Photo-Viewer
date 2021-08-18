@@ -18,6 +18,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - Undo and redo history states
 - Open next and previous files (from the file system)
 - Save images and GIFs with the applied effects
+- Process images multiple images in bulk
 
 ### Keyboard Shortcuts:
 - R: Rotate
@@ -30,8 +31,9 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - Ctrl -: Zoom out
 - Ctrl C: Copy
 - Ctrl V: Paste
-- Ctrl S: Save image
-- Ctrl O: Open image
+- Ctrl S: Save image(s)
+- Ctrl O: Open image(s)
+- Drag and drop: Open image(s)
 
 ### Installation
 
