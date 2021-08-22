@@ -18,7 +18,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 - Undo and redo history states
 - Open next and previous files (from the file system)
 - Save images and GIFs with the applied effects
-- Process images multiple images in bulk
+- Process multiple images in bulk
 
 ### Keyboard Shortcuts:
 - R: Rotate
