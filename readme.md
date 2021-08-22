@@ -46,3 +46,4 @@ Open an issue on my GitHub repository.
 ### Also See
 
 - [Music Player](https://github.com/Tenpi/Music-Player)
+- [Video Player](https://github.com/Tenpi/Video-Player)
