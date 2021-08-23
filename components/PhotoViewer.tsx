@@ -2,7 +2,6 @@ import React, {useEffect, useState, useRef, useReducer} from "react"
 import {ipcRenderer, clipboard, nativeImage, remote} from "electron" 
 import ReactCrop from "react-image-crop"
 import path from "path"
-import noImage from "../assets/images/noimage.png"
 import brightnessButton from "../assets/icons/brightness.png"
 import brightnessButtonHover from "../assets/icons/brightness-hover.png"
 import hueButton from "../assets/icons/hue.png"
@@ -88,11 +87,6 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             const file = await ipcRenderer.invoke("get-opened-file")
             if (file && imageExtensions.includes(path.extname(file))) {
                 upload (file)
-            } else {
-                setImage(noImage)
-                ipcRenderer.invoke("update-original-images", noImage)
-                resetZoom()
-                resetRotation()
             }
         }
         getOpenedFile()
@@ -260,7 +254,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 crop(response)
             }
         }
-        const keyDown = (event: globalThis.KeyboardEvent) => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
             if (event.key === "Enter") {
                 if (cropEnabled) crop("accept")
                 ipcRenderer.invoke("enter-pressed")
@@ -316,7 +310,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                     oldY = event.pageY
                 }
         }
-        const onClick = () => {
+        const onClick = async () => {
             const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
             if (selection?.style.opacity === "1") setCropEnabled(true)
             document.documentElement.style.setProperty("cursor", "default")
@@ -600,7 +594,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                     <div className="rotate-container" style={{transform: `rotate(${rotateDegrees}deg)`}}>
                         {bulk ? <BulkContainer files={bulkFiles}/> :
                         <div className="photo-container">
-                            <ReactCrop className="photo" src={image} scale={zoomScale} rotate={rotateDegrees} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
+                            <ReactCrop className="photo" src={image} zoom={zoomScale} spin={rotateDegrees} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
                         </div>}
                     </div>
                 </TransformComponent>
