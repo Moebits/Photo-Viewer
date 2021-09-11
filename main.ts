@@ -642,7 +642,7 @@ ipcMain.handle("hsl", async (event, state: any) => {
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
-          .modulate({hue, saturation, brightness: lightness})
+          .modulate({hue, saturation, lightness})
           .toBuffer()
         newFrameArray.push(newFrame)
       }
@@ -650,7 +650,6 @@ ipcMain.handle("hsl", async (event, state: any) => {
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
       buffer = await sharp(image)
-        // @ts-ignore
         .modulate({hue, saturation, lightness})
         .toBuffer()
     }
