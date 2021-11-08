@@ -1,4 +1,4 @@
-import {ipcRenderer, clipboard, remote} from "electron"
+import {ipcRenderer, clipboard} from "electron"
 import EventEmitter from "events"
 import React, {useEffect, useState, useRef} from "react"
 import functions from "../structures/functions"

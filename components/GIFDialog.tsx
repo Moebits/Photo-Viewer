@@ -1,4 +1,4 @@
-import {ipcRenderer, remote} from "electron"
+import {ipcRenderer} from "electron"
 import Draggable from "react-draggable"
 import React, {useEffect, useState, useRef} from "react"
 import checkbox from "../assets/icons/checkbox.png"

@@ -10,10 +10,12 @@ import pack from "./package.json"
 import sharp from "sharp"
 import fs from "fs"
 
+require("@electron/remote/main").initialize()
 process.setMaxListeners(0)
 let window: Electron.BrowserWindow | null
 autoUpdater.autoDownload = false
 const store = new Store()
+let filePath = ""
 
 let originalImages = null as any
 let originalName = null as any
@@ -989,13 +991,25 @@ ipcMain.handle("check-for-updates", async (event, startup: boolean) => {
 })
 
 ipcMain.handle("get-opened-file", () => {
-  return process.argv[1]
+  if (process.platform !== "darwin") {
+    return process.argv[1]
+  } else {
+    return filePath
+  }
 })
 
 const openFile = (argv?: any) => {
-  let file = argv ? argv[2] : process.argv[1]
-  window?.webContents.send("open-file", file)
+  if (process.platform !== "darwin") {
+    let file = argv ? argv[2] : process.argv[1]
+    window?.webContents.send("open-file", file)
+  }
 }
+
+app.on("open-file", (event, file) => {
+  filePath = file
+  event.preventDefault()
+  window?.webContents.send("open-file", file)
+})
 
 const singleLock = app.requestSingleInstanceLock()
 
@@ -1015,6 +1029,7 @@ if (!singleLock) {
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()
+    require("@electron/remote/main").enable(window.webContents)
     window.on("closed", () => {
       window = null
     })

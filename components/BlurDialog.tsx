@@ -1,4 +1,4 @@
-import {ipcRenderer, remote} from "electron"
+import {ipcRenderer} from "electron"
 import Slider from "rc-slider"
 import Draggable from "react-draggable"
 import React, {useEffect, useState, useRef} from "react"

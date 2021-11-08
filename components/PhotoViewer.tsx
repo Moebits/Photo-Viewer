@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef, useReducer} from "react"
-import {ipcRenderer, clipboard, nativeImage, remote} from "electron" 
+import {ipcRenderer, clipboard, nativeImage} from "electron" 
+import {app} from "@electron/remote"
 import ReactCrop from "react-image-crop"
 import path from "path"
 import brightnessButton from "../assets/icons/brightness.png"
@@ -497,7 +498,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 } else {
                     name = path.basename(defaultPath)
                 }
-                defaultPath = `${remote.app.getPath("downloads")}/${name}`
+                defaultPath = `${app.getPath("downloads")}/${name}`
             }
             let savePath = await ipcRenderer.invoke("save-dialog", defaultPath)
             if (!savePath) return

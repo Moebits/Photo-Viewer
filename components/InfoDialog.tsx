@@ -1,4 +1,4 @@
-import {ipcRenderer, remote} from "electron"
+import {ipcRenderer} from "electron"
 import Draggable from "react-draggable"
 import React, {useEffect, useState} from "react"
 import "../styles/infodialog.less"
