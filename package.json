@@ -30,6 +30,7 @@
       "buildResources": "assets",
       "output": "build"
     },
+    "buildDependenciesFromSource": true,
     "mac": {
       "target": {
         "target": "dmg",
