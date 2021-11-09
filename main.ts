@@ -46,6 +46,18 @@ const saveImage = (image: any, savePath: string) => {
   }
 }
 
+const getDimensions = async (image: any) => {
+  const metadata = await sharp(image).metadata()
+  return {width: metadata.width ?? 0, height: metadata.height ?? 0}
+}
+
+ipcMain.handle("resize-window", async (event, image: string) => {
+  const dim = await getDimensions(image)
+  const {width, height} = functions.constrainDimensions(dim.width, dim.height)
+  window?.setSize(width, height, true)
+})
+
+
 ipcMain.handle("save-image", async (event, image: any, savePath: string) => {
   saveImage(image, savePath)
   shell.showItemInFolder(path.normalize(savePath))
@@ -108,8 +120,7 @@ ipcMain.handle("get-info", (event: any, image: string) => {
 })
 
 ipcMain.handle("get-width-height", async (event, image: any) => {
-  const metadata = await sharp(image).metadata()
-  return {width: metadata.width, height: metadata.height}
+  return getDimensions(image)
 })
 
 ipcMain.handle("get-gif-options", () => {
@@ -1025,7 +1036,7 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 900, height: 650, minWidth: 720, minHeight: 450, frame: false, backgroundColor: "#3177f5", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
+    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, frame: false, backgroundColor: "#3177f5", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()

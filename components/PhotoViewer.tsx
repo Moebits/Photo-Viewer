@@ -349,6 +349,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             ipcRenderer.invoke("set-original-name", path.basename(file, path.extname(file)))
         }
         setImage(newImg)
+        ipcRenderer.invoke("resize-window", newImg)
         ipcRenderer.invoke("update-original-images", newImg)
         ipcRenderer.invoke("set-original-link", null)
         resetZoom()
@@ -592,7 +593,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             </div>
             <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} onZoomStop={(ref) => setZoomScale(ref.state.scale)} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} alignmentAnimation={{disabled: true}} doubleClick={{mode: "reset", animationTime: 0}}>
                 <TransformComponent>
-                    <div className="rotate-container" style={{transform: `rotate(${rotateDegrees}deg)`}}>
+                    <div className="rotate-photo-container" style={{transform: `rotate(${rotateDegrees}deg)`}}>
                         {bulk ? <BulkContainer files={bulkFiles}/> :
                         <div className="photo-container">
                             <ReactCrop className="photo" src={image} zoom={zoomScale} spin={rotateDegrees} crop={cropState as any} onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>
