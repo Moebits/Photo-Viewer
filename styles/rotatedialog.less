@@ -2,6 +2,7 @@
 @import "./titlebar.less";
 
 .rotate-dialog {
+    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -18,8 +19,8 @@
 .rotate-dialog-box {
     position: absolute;
     pointer-events: all;
-    right: 70px;
-    top: 60px;
+    right: 0; // 70px;
+    top: 0; // 60px;
     width: 230px;
     height: 170px;
     border-radius: 10px;
@@ -92,6 +93,7 @@
 }
 
 .rotate-slider.rc-slider {
+    -webkit-app-region: no-drag;
     width: 70%;
     border-radius: 0.2;
     align-items: center;
@@ -136,6 +138,7 @@
 }
 
 .reject-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -156,6 +159,7 @@
 }
 
 .accept-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -183,10 +187,12 @@
 }
 
 .rotate-arrow:hover {
+    -webkit-app-region: no-drag;
     cursor: pointer;
 }
 
 .rotate-input {
+    -webkit-app-region: no-drag;
     color: var(--text-color);
     border: none;
     margin-left: 10px;

@@ -1,7 +1,9 @@
 import {ipcRenderer} from "electron"
 import Slider from "rc-slider"
 import Draggable from "react-draggable"
-import React, {useEffect, useState, useRef} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/binarizedialog.less"
 
 const BinarizeDialog: React.FunctionComponent = (props) => {
@@ -9,39 +11,44 @@ const BinarizeDialog: React.FunctionComponent = (props) => {
         binarize: 128
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showBinarizeDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                if (newState === true) setTimeout(() => {ipcRenderer.invoke("apply-binarize", {...state, realTime: true})}, 100)
-                return newState
-            })
+        setTimeout(() => {ipcRenderer.invoke("apply-binarize", {...state, realTime: true})}, 100)
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "binarize") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        ipcRenderer.on("show-binarize-dialog", showBinarizeDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-binarize-dialog", showBinarizeDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -58,13 +65,10 @@ const BinarizeDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -80,32 +84,27 @@ const BinarizeDialog: React.FunctionComponent = (props) => {
         closeAndReset(button === "accept")
     }
 
-    if (visible) {
-        return (
-            <section className="binarize-dialog" onMouseDown={close}>
-                <Draggable handle=".binarize-title-container">
-                <div className="binarize-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="binarize-container">
-                        <div className="binarize-title-container">
-                            <p className="binarize-title">Binarize</p>
-                        </div>
-                        <div className="binarize-row-container">
-                            <div className="binarize-row">
-                                <p className="binarize-text">Threshold: </p>
-                                <Slider className="binarize-slider" onChange={(value) => {changeState("binarize", value)}} min={1} max={255} step={1} value={state.binarize}/>
-                            </div>
-                        </div>
-                        <div className="binarize-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+    return (
+        <section className="binarize-dialog" onMouseDown={close}>
+            <div className="binarize-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="binarize-container">
+                    <div className="binarize-title-container">
+                        <p className="binarize-title">Binarize</p>
+                    </div>
+                    <div className="binarize-row-container">
+                        <div className="binarize-row">
+                            <p className="binarize-text">Threshold: </p>
+                            <Slider className="binarize-slider" onChange={(value) => {changeState("binarize", value)}} min={1} max={255} step={1} value={state.binarize}/>
                         </div>
                     </div>
+                    <div className="binarize-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default BinarizeDialog
+ReactDom.render(<BinarizeDialog/>, document.getElementById("root"))

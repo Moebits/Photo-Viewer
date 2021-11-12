@@ -2,6 +2,7 @@
 @import "./titlebar.less";
 
 .tint-dialog {
+    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -18,8 +19,8 @@
 .tint-dialog-box {
     position: absolute;
     pointer-events: all;
-    left: 70px;
-    top: 130px;
+    left: 0; // 70px;
+    top: 0; // 130px;
     width: 180px;
     height: 135px;
     border-radius: 10px;
@@ -99,6 +100,7 @@
 }
 
 .reject-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -119,6 +121,7 @@
 }
 
 .accept-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -139,6 +142,7 @@
 }
 
 .tint-color-box {
+    -webkit-app-region: no-drag;
 	width: 25px;
 	height: 25px;
 }

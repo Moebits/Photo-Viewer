@@ -1,6 +1,7 @@
 import {ipcRenderer} from "electron"
-import Draggable from "react-draggable"
-import React, {useEffect, useState, useRef} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/tintdialog.less"
 
 const TintDialog: React.FunctionComponent = (props) => {
@@ -8,45 +9,45 @@ const TintDialog: React.FunctionComponent = (props) => {
         tint: "#ffffff"
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
     const [clickCounter, setClickCounter] = useState(2)
 
     useEffect(() => {
-        const showTintDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                if (newState === true) setTimeout(() => {ipcRenderer.invoke("apply-tint", {...state, realTime: true})}, 100)
-                return newState
-            })
+        setTimeout(() => {ipcRenderer.invoke("apply-tint", {...state, realTime: true})}, 100)
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "tint") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        const clickCounter = () => {
-            setClickCounter((prev) => prev + 1)
-        }
-        document.addEventListener("click", clickCounter)
-        ipcRenderer.on("show-tint-dialog", showTintDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-tint-dialog", showTintDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
-            document.removeEventListener("click", clickCounter)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -63,13 +64,10 @@ const TintDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -85,32 +83,27 @@ const TintDialog: React.FunctionComponent = (props) => {
         closeAndReset(button === "accept")
     }
 
-    if (visible) {
-        return (
-            <section className="tint-dialog" onMouseDown={close}>
-                <Draggable handle=".tint-title-container">
-                <div className="tint-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="tint-container">
-                        <div className="tint-title-container">
-                            <p className="tint-title">Tint</p>
-                        </div>
-                        <div className="tint-row-container">
-                            <div className="tint-row">
-                                <p className="tint-text">Color: </p>
-                                <input onChange={(event) => changeState("tint", event.target.value)} onClick={() => setClickCounter(0)} type="color" className="tint-color-box" value={state.tint}></input>
-                            </div>
-                        </div>
-                        <div className="tint-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+    return (
+        <section className="tint-dialog" onMouseDown={close}>
+            <div className="tint-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="tint-container">
+                    <div className="tint-title-container">
+                        <p className="tint-title">Tint</p>
+                    </div>
+                    <div className="tint-row-container">
+                        <div className="tint-row">
+                            <p className="tint-text">Color: </p>
+                            <input onChange={(event) => changeState("tint", event.target.value)} onClick={() => setClickCounter(0)} type="color" className="tint-color-box" value={state.tint}></input>
                         </div>
                     </div>
+                    <div className="tint-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default TintDialog
+ReactDom.render(<TintDialog/>, document.getElementById("root"))

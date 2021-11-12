@@ -1,7 +1,8 @@
 import {ipcRenderer} from "electron"
 import Slider from "rc-slider"
-import Draggable from "react-draggable"
-import React, {useEffect, useState, useRef} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/blurdialog.less"
 
 const BlurDialog: React.FunctionComponent = (props) => {
@@ -10,38 +11,43 @@ const BlurDialog: React.FunctionComponent = (props) => {
         sharpen: 0.3
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showBlurDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                return newState
-            })
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "blur") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        ipcRenderer.on("show-blur-dialog", showBlurDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-blur-dialog", showBlurDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -64,13 +70,10 @@ const BlurDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -86,36 +89,31 @@ const BlurDialog: React.FunctionComponent = (props) => {
         closeAndReset(button === "accept")
     }
 
-    if (visible) {
-        return (
-            <section className="blur-dialog" onMouseDown={close}>
-                <Draggable handle=".blur-title-container">
-                <div className="blur-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="blur-container">
-                        <div className="blur-title-container">
-                            <p className="blur-title">Blur and Sharpen</p>
+    return (
+        <section className="blur-dialog" onMouseDown={close}>
+            <div className="blur-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="blur-container">
+                    <div className="blur-title-container">
+                        <p className="blur-title">Blur and Sharpen</p>
+                    </div>
+                    <div className="blur-row-container">
+                        <div className="blur-row">
+                            <p className="blur-text">Blur: </p>
+                            <Slider className="blur-slider" onChange={(value) => {changeState("blur", value)}} min={0.3} max={15} step={0.1} value={state.blur}/>
                         </div>
-                        <div className="blur-row-container">
-                            <div className="blur-row">
-                                <p className="blur-text">Blur: </p>
-                                <Slider className="blur-slider" onChange={(value) => {changeState("blur", value)}} min={0.3} max={15} step={0.1} value={state.blur}/>
-                            </div>
-                            <div className="blur-row">
-                                <p className="blur-text">Sharpen: </p>
-                                <Slider className="blur-slider" onChange={(value) => {changeState("sharpen", value)}} min={0.3} max={15} step={0.1} value={state.sharpen}/>
-                            </div>
-                        </div>
-                        <div className="blur-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                        <div className="blur-row">
+                            <p className="blur-text">Sharpen: </p>
+                            <Slider className="blur-slider" onChange={(value) => {changeState("sharpen", value)}} min={0.3} max={15} step={0.1} value={state.sharpen}/>
                         </div>
                     </div>
+                    <div className="blur-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default BlurDialog
+ReactDom.render(<BlurDialog/>, document.getElementById("root"))

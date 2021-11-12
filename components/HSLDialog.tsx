@@ -1,7 +1,8 @@
 import {ipcRenderer} from "electron"
 import Slider from "rc-slider"
-import Draggable from "react-draggable"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/hsldialog.less"
 
 const HSLDialog: React.FunctionComponent = (props) => {
@@ -11,38 +12,43 @@ const HSLDialog: React.FunctionComponent = (props) => {
         lightness: 0
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showHSLDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                return newState
-            })
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "hsl") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        ipcRenderer.on("show-hsl-dialog", showHSLDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-hsl-dialog", showHSLDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -71,13 +77,10 @@ const HSLDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -93,40 +96,35 @@ const HSLDialog: React.FunctionComponent = (props) => {
         closeAndReset(button === "accept")
     }
 
-    if (visible) {
-        return (
-            <section className="hsl-dialog" onMouseDown={close}>
-                <Draggable handle=".hsl-title-container">
-                <div className="hsl-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="hsl-container">
-                        <div className="hsl-title-container">
-                            <p className="hsl-title">HSL Adjustment</p>
+    return (
+        <section className="hsl-dialog" onMouseDown={close}>
+            <div className="hsl-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="hsl-container">
+                    <div className="hsl-title-container">
+                        <p className="hsl-title">HSL Adjustment</p>
+                    </div>
+                    <div className="hsl-row-container">
+                        <div className="hsl-row">
+                            <p className="hsl-text">Hue: </p>
+                            <Slider className="hsl-slider" onChange={(value) => {changeState("hue", value)}} min={-180} max={180} step={1} value={state.hue}/>
                         </div>
-                        <div className="hsl-row-container">
-                            <div className="hsl-row">
-                                <p className="hsl-text">Hue: </p>
-                                <Slider className="hsl-slider" onChange={(value) => {changeState("hue", value)}} min={-180} max={180} step={1} value={state.hue}/>
-                            </div>
-                            <div className="hsl-row">
-                                <p className="hsl-text">Saturation: </p>
-                                <Slider className="hsl-slider" onChange={(value) => {changeState("saturation", value)}} min={0.5} max={1.5} step={0.1} value={state.saturation}/>
-                            </div>
-                            <div className="hsl-row">
-                                <p className="hsl-text">Lightness: </p>
-                                <Slider className="hsl-slider" onChange={(value) => {changeState("lightness", value)}} min={-100} max={100} step={1} value={state.lightness}/>
-                            </div>
+                        <div className="hsl-row">
+                            <p className="hsl-text">Saturation: </p>
+                            <Slider className="hsl-slider" onChange={(value) => {changeState("saturation", value)}} min={0.5} max={1.5} step={0.1} value={state.saturation}/>
                         </div>
-                        <div className="hsl-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                        <div className="hsl-row">
+                            <p className="hsl-text">Lightness: </p>
+                            <Slider className="hsl-slider" onChange={(value) => {changeState("lightness", value)}} min={-100} max={100} step={1} value={state.lightness}/>
                         </div>
                     </div>
+                    <div className="hsl-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default HSLDialog
+ReactDom.render(<HSLDialog/>, document.getElementById("root"))

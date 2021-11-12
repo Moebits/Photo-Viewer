@@ -313,4 +313,32 @@ export default class Functions {
         }
         return {width: Math.floor(newWidth), height: Math.floor(newHeight)}
     }
+
+    public static updateTheme = (value: string) => {
+        if (value === "dark") {
+            document.documentElement.style.setProperty("--bg-color", "#090409")
+            document.documentElement.style.setProperty("--title-color", "#090409")
+            document.documentElement.style.setProperty("--text-color", "#3177f5")
+            document.documentElement.style.setProperty("--button-color", "#090409")
+            document.documentElement.style.setProperty("--button-text", "#4486ff")
+            document.documentElement.style.setProperty("--version-color", "#090409")
+            document.documentElement.style.setProperty("--version-text", "#3a8fff")
+            document.documentElement.style.setProperty("--version-accept", "#090409")
+            document.documentElement.style.setProperty("--version-reject", "#090409")
+            document.documentElement.style.setProperty("--version-accept-text", "#4486ff")
+            document.documentElement.style.setProperty("--version-reject-text", "#338bff")
+        } else {
+            document.documentElement.style.setProperty("--bg-color", "#7294cf")
+            document.documentElement.style.setProperty("--title-color", "#3177f5")
+            document.documentElement.style.setProperty("--text-color", "black")
+            document.documentElement.style.setProperty("--button-color", "#4486ff")
+            document.documentElement.style.setProperty("--button-text", "black")
+            document.documentElement.style.setProperty("--version-color", "#3a8fff")
+            document.documentElement.style.setProperty("--version-text", "black")
+            document.documentElement.style.setProperty("--version-accept", "#4486ff")
+            document.documentElement.style.setProperty("--version-reject", "#338bff")
+            document.documentElement.style.setProperty("--version-accept-text", "black")
+            document.documentElement.style.setProperty("--version-reject-text", "black")
+        }
+    }
 }

@@ -547,13 +547,11 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     }
 
     const zoomIn = () => {
-        console.log(zoomRef?.current)
-        zoomRef?.current!.zoomIn(0.5)
+        zoomRef?.current!.zoomIn(0.5, 0)
     }
 
     const zoomOut = () => {
-        console.log(zoomRef?.current)
-        zoomRef?.current!.zoomOut(0.5)
+        zoomRef?.current!.zoomOut(0.5, 0)
     }
 
     const bulkProcess = async () => {

@@ -1,6 +1,6 @@
 import {ipcRenderer, clipboard} from "electron"
 import {getCurrentWindow, shell} from "@electron/remote"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useContext} from "react"
 import closeButtonHover from "../assets/icons/close-hover.png"
 import closeButton from "../assets/icons/close.png"
 import appIcon from "../assets/icons/logo.png"
@@ -32,10 +32,13 @@ import hundredButton from "../assets/icons/100.png"
 import hundredButtonHover from "../assets/icons/100-hover.png"
 import bulkButton from "../assets/icons/bulk.png"
 import bulkButtonHover from "../assets/icons/bulk-hover.png"
+import {HoverContext} from "../renderer"
 import pack from "../package.json"
 import "../styles/titlebar.less"
+import functions from "../structures/functions"
 
 const TitleBar: React.FunctionComponent = (props) => {
+    const {hover, setHover} = useContext(HoverContext)
     const [hoverClose, setHoverClose] = useState(false)
     const [hoverMin, setHoverMin] = useState(false)
     const [hoverMax, setHoverMax] = useState(false)
@@ -116,31 +119,11 @@ const TitleBar: React.FunctionComponent = (props) => {
     const changeTheme = (value?: string) => {
         let condition = value !== undefined ? value === "dark" : theme === "light"
         if (condition) {
-            document.documentElement.style.setProperty("--bg-color", "#090409")
-            document.documentElement.style.setProperty("--title-color", "#090409")
-            document.documentElement.style.setProperty("--text-color", "#3177f5")
-            document.documentElement.style.setProperty("--button-color", "#090409")
-            document.documentElement.style.setProperty("--button-text", "#4486ff")
-            document.documentElement.style.setProperty("--version-color", "#090409")
-            document.documentElement.style.setProperty("--version-text", "#3a8fff")
-            document.documentElement.style.setProperty("--version-accept", "#090409")
-            document.documentElement.style.setProperty("--version-reject", "#090409")
-            document.documentElement.style.setProperty("--version-accept-text", "#4486ff")
-            document.documentElement.style.setProperty("--version-reject-text", "#338bff")
+            functions.updateTheme("dark")
             setTheme("dark")
             ipcRenderer.invoke("save-theme", "dark")
         } else {
-            document.documentElement.style.setProperty("--bg-color", "#7294cf")
-            document.documentElement.style.setProperty("--title-color", "#3177f5")
-            document.documentElement.style.setProperty("--text-color", "black")
-            document.documentElement.style.setProperty("--button-color", "#4486ff")
-            document.documentElement.style.setProperty("--button-text", "black")
-            document.documentElement.style.setProperty("--version-color", "#3a8fff")
-            document.documentElement.style.setProperty("--version-text", "black")
-            document.documentElement.style.setProperty("--version-accept", "#4486ff")
-            document.documentElement.style.setProperty("--version-reject", "#338bff")
-            document.documentElement.style.setProperty("--version-accept-text", "black")
-            document.documentElement.style.setProperty("--version-reject-text", "black")
+            functions.updateTheme("light")
             setTheme("light")
             ipcRenderer.invoke("save-theme", "light")
         }
@@ -164,7 +147,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     }
 
     return (
-        <section className="title-bar">
+        <section className={hover ? "title-bar visible" : "title-bar"}>
                 <div className="title-bar-drag-area">
                     <div className="title-container">
                         <img className="app-icon" height="22" width="22" src={appIcon}/>

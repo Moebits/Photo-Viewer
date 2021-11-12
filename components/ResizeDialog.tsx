@@ -1,6 +1,7 @@
 import {ipcRenderer} from "electron"
-import Draggable from "react-draggable"
-import React, {useEffect, useState, useRef} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import chain from "../assets/icons/chain.png"
 import chainHover from "../assets/icons/chain-hover.png"
 import chainTop from "../assets/icons/chainTop.png"
@@ -17,52 +18,55 @@ const ResizeDialog: React.FunctionComponent = (props) => {
         percent: false
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
     const [hoverChain, setHoverChain] = useState(false)
 
     useEffect(() => {
-        const showResizeDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                if (newState === true) {
-                    ipcRenderer.invoke("get-metadata").then((metadata: any) => {
-                        if (metadata.length > 1) {
-                            setState((prev) => {
-                                return {...prev, width: 100, height: 100, originalWidth: 100, originalHeight: 100, percent: true}
-                            })
-                        } else {
-                            setState((prev) => {
-                                return {...prev, width: metadata[0].width, height: metadata[0].height, originalWidth: metadata[0].width, originalHeight: metadata[0].height}
-                            })
-                        }
-                    })
-                }
-                return newState
-            })
+        ipcRenderer.invoke("get-metadata").then((metadata: any) => {
+            if (metadata.length > 1) {
+                setState((prev) => {
+                    return {...prev, width: 100, height: 100, originalWidth: 100, originalHeight: 100, percent: true}
+                })
+            } else {
+                setState((prev) => {
+                    return {...prev, width: metadata[0].width, height: metadata[0].height, originalWidth: metadata[0].width, originalHeight: metadata[0].height}
+                })
+            }
+        })
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "resize") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        ipcRenderer.on("show-resize-dialog", showResizeDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-resize-dialog", showResizeDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -79,13 +83,10 @@ const ResizeDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -152,41 +153,36 @@ const ResizeDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    if (visible) {
-        return (
-            <section className="resize-dialog" onMouseDown={close}>
-                <Draggable handle=".resize-title-container">
-                <div className="resize-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="resize-container">
-                        <div className="resize-title-container">
-                            <p className="resize-title">Resize</p>
+    return (
+        <section className="resize-dialog" onMouseDown={close}>
+            <div className="resize-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="resize-container">
+                    <div className="resize-title-container">
+                        <p className="resize-title">Resize</p>
+                    </div>
+                    <div className="resize-row-container">
+                        <div className="resize-row">
+                            <p className="resize-text">Width{state.percent ? " %" : ""}: </p>
+                            <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeWidth(event.target.value)} value={state.width} onKeyDown={widthKey}/>
                         </div>
-                        <div className="resize-row-container">
-                            <div className="resize-row">
-                                <p className="resize-text">Width{state.percent ? " %" : ""}: </p>
-                                <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeWidth(event.target.value)} value={state.width} onKeyDown={widthKey}/>
-                            </div>
-                            <div className="resize-row">
-                                <p className="resize-text">Height{state.percent ? " %" : ""}: </p>
-                                <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeHeight(event.target.value)} value={state.height} onKeyDown={heightKey}/>
-                            </div>
-                            <div className="resize-chain-container">
-                                <img src={chainTop} className="resize-chain-top" style={state.link ? {opacity: 1} : {opacity: 0}}/>
-                                <img src={hoverChain ? chainHover : chain} className="resize-chain" onClick={changeLink} onMouseEnter={() => setHoverChain(true)} onMouseLeave={() => setHoverChain(false)}/>
-                                <img src={chainBottom} className="resize-chain-bottom" style={state.link ? {opacity: 1} : {opacity: 0}}/>
-                            </div>
+                        <div className="resize-row">
+                            <p className="resize-text">Height{state.percent ? " %" : ""}: </p>
+                            <input className="resize-input" type="text" spellCheck="false" onChange={(event) => changeHeight(event.target.value)} value={state.height} onKeyDown={heightKey}/>
                         </div>
-                        <div className="resize-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                        <div className="resize-chain-container">
+                            <img src={chainTop} className="resize-chain-top" style={state.link ? {opacity: 1} : {opacity: 0}}/>
+                            <img src={hoverChain ? chainHover : chain} className="resize-chain" onClick={changeLink} onMouseEnter={() => setHoverChain(true)} onMouseLeave={() => setHoverChain(false)}/>
+                            <img src={chainBottom} className="resize-chain-bottom" style={state.link ? {opacity: 1} : {opacity: 0}}/>
                         </div>
                     </div>
+                    <div className="resize-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default ResizeDialog
+ReactDom.render(<ResizeDialog/>, document.getElementById("root"))

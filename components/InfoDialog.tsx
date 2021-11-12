@@ -1,10 +1,12 @@
 import {ipcRenderer} from "electron"
 import Draggable from "react-draggable"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import {HoverContext} from "../renderer"
 import "../styles/infodialog.less"
 import functions from "../structures/functions"
 
 const InfoDialog: React.FunctionComponent = (props) => {
+    const {setHover: setHoverCtx} = useContext(HoverContext)
     const initialState = {
         name: null,
         width: 0,
@@ -60,7 +62,7 @@ const InfoDialog: React.FunctionComponent = (props) => {
 
     if (visible) {
         return (
-            <section className="info-dialog" onMouseDown={close}>
+            <section className="info-dialog" onMouseDown={close} onMouseEnter={() => setHoverCtx(false)} onMouseLeave={() => setHoverCtx(true)}>
                 <Draggable>
                 <div className="info-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                     <div className="info-container">

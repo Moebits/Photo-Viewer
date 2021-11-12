@@ -2,6 +2,7 @@
 @import "./titlebar.less";
 
 .pixelate-dialog {
+    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -18,8 +19,8 @@
 .pixelate-dialog-box {
     position: absolute;
     pointer-events: all;
-    left: 70px;
-    top: 330px;
+    left: 0; // 70px;
+    top: 0; // 330px;
     width: 250px;
     height: 130px;
     border-radius: 10px;
@@ -93,6 +94,7 @@
 }
 
 .pixelate-slider.rc-slider {
+    -webkit-app-region: no-drag;
     width: 70%;
     border-radius: 0.2;
     align-items: center;
@@ -137,6 +139,7 @@
 }
 
 .reject-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -157,6 +160,7 @@
 }
 
 .accept-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;

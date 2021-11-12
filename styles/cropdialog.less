@@ -2,6 +2,7 @@
 @import "./titlebar.less";
 
 .crop-dialog {
+    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -18,8 +19,8 @@
 .crop-dialog-box {
     position: absolute;
     pointer-events: all;
-    left: 70px;
-    top: 400px;
+    left: 0; // 70px;
+    top: 0; // 400px;
     width: 190px;
     height: 220px;
     border-radius: 10px;
@@ -99,6 +100,7 @@
 }
 
 .reject-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -119,6 +121,7 @@
 }
 
 .accept-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -139,6 +142,7 @@
 }
 
 .crop-input {
+    -webkit-app-region: no-drag;
     color: var(--text-color);
     border: none;
     margin-left: 10px;

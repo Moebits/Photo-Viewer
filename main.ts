@@ -13,6 +13,7 @@ import fs from "fs"
 require("@electron/remote/main").initialize()
 process.setMaxListeners(0)
 let window: Electron.BrowserWindow | null
+let currentDialog: Electron.BrowserWindow | null
 autoUpdater.autoDownload = false
 const store = new Store()
 let filePath = ""
@@ -22,6 +23,8 @@ let originalName = null as any
 let originalLink = null as any
 let historyStates = [] as string[]
 let historyIndex = -1
+
+ipcMain.handle("debug", console.log)
 
 const updateHistoryState = (state: any) => {
   historyIndex++
@@ -50,6 +53,10 @@ const getDimensions = async (image: any) => {
   const metadata = await sharp(image).metadata()
   return {width: metadata.width ?? 0, height: metadata.height ?? 0}
 }
+
+ipcMain.handle("close-current-dialog", () => {
+  currentDialog?.close()
+})
 
 ipcMain.handle("resize-window", async (event, image: string) => {
   const dim = await getDimensions(image)
@@ -163,8 +170,27 @@ ipcMain.handle("gif-effects", async (event: any, state: any) => {
 })
 
 ipcMain.handle("show-gif-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "gif")
-  window?.webContents.send("show-gif-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "gif") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 190, height: 220, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "gifdialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "gif"
 })
 
 ipcMain.handle("get-original-link", async () => {
@@ -191,10 +217,12 @@ ipcMain.handle("tiff-to-png", async (event, file: string) => {
 
 ipcMain.handle("escape-pressed", () => {
   window?.webContents.send("escape-pressed")
+  currentDialog?.webContents.send("escape-pressed")
 })
 
 ipcMain.handle("enter-pressed", () => {
   window?.webContents.send("enter-pressed")
+  currentDialog?.webContents.send("enter-pressed")
 })
 
 ipcMain.handle("accept-action-response", (event: any, action: string, response: "accept" | "cancel") => {
@@ -316,8 +344,27 @@ ipcMain.handle("apply-crop", async (event, state: any) => {
 })
 
 ipcMain.handle("show-crop-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "crop")
-  window?.webContents.send("show-crop-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "crop") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 190, height: 220, x: bounds.x + 70, y: bounds.y + 400, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "cropdialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "crop"
 })
 
 ipcMain.handle("rotate", async (event, state: any) => {
@@ -369,8 +416,27 @@ ipcMain.handle("apply-rotate", async (event, state: any) => {
 })
 
 ipcMain.handle("show-rotate-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "rotate")
-  window?.webContents.send("show-rotate-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "rotate") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 230, height: 170, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 60, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "rotatedialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "rotate"
 })
 
 ipcMain.handle("resize", async (event, state: any) => {
@@ -422,8 +488,27 @@ ipcMain.handle("apply-resize", async (event, state: any) => {
 })
 
 ipcMain.handle("show-resize-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "resize")
-  window?.webContents.send("show-resize-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "resize") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 230, height: 150, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 40, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "resizedialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "resize"
 })
 
 ipcMain.handle("binarize", async (event, state: any) => {
@@ -472,8 +557,27 @@ ipcMain.handle("apply-binarize", async (event, state: any) => {
 })
 
 ipcMain.handle("show-binarize-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "binarize")
-  window?.webContents.send("show-binarize-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "binarize") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 450, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "binarizedialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "binarize"
 })
 
 ipcMain.handle("pixelate", async (event, state: any) => {
@@ -530,8 +634,27 @@ ipcMain.handle("apply-pixelate", async (event, state: any) => {
 })
 
 ipcMain.handle("show-pixelate-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "pixelate")
-  window?.webContents.send("show-pixelate-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "pixelate") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 330, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "pixelatedialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "pixelate"
 })
 
 ipcMain.handle("blur", async (event, state: any) => {
@@ -582,8 +705,27 @@ ipcMain.handle("apply-blur", async (event, state: any) => {
 })
 
 ipcMain.handle("show-blur-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "blur")
-  window?.webContents.send("show-blur-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "blur") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 250, height: 155, x: bounds.x + 70, y: bounds.y + 190, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "blurdialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "blur"
 })
 
 ipcMain.handle("tint", async (event, state: any) => {
@@ -632,8 +774,27 @@ ipcMain.handle("apply-tint", async (event, state: any) => {
 })
 
 ipcMain.handle("show-tint-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "tint")
-  window?.webContents.send("show-tint-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "tint") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 180, height: 135, x: bounds.x + 70, y: bounds.y + 130, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "tintdialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "tint"
 })
 
 ipcMain.handle("hsl", async (event, state: any) => {
@@ -682,8 +843,27 @@ ipcMain.handle("apply-hsl", async (event, state: any) => {
 })
 
 ipcMain.handle("show-hsl-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "hsl")
-  window?.webContents.send("show-hsl-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "hsl") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 250, height: 180, x: bounds.x + 70, y: bounds.y + 50, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "hsldialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "hsl"
 })
 
 ipcMain.handle("brightness", async (event, state: any) => {
@@ -734,15 +914,39 @@ ipcMain.handle("apply-brightness", async (event, state: any) => {
 })
 
 ipcMain.handle("show-brightness-dialog", async (event) => {
-  window?.webContents.send("close-all-dialogs", "brightness")
-  window?.webContents.send("show-brightness-dialog")
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "brightness") return
+  }
+  const backgroundColor = "#3177f5"
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 250, height: 150, x: bounds.x + 70, y: bounds.y + 40, resizable: false, show: false, frame: false, backgroundColor, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "brightnessdialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "brightness"
 })
 
-ipcMain.handle("revert-to-last-state", async (event) => {
+const revertToLastState = () => {
   let images = historyStates[historyIndex] as any
   if (images) {
     window?.webContents.send("update-images", images)
   }
+}
+
+ipcMain.handle("revert-to-last-state", async (event) => {
+  return revertToLastState()
 })
 
 ipcMain.handle("get-original-images", async (event) => {
@@ -983,11 +1187,19 @@ ipcMain.handle("get-theme", () => {
 
 ipcMain.handle("save-theme", (event, theme: string) => {
   store.set("theme", theme)
+  currentDialog?.webContents.send("update-theme", theme)
 })
 
 ipcMain.handle("install-update", async (event) => {
-  await autoUpdater.downloadUpdate()
-  autoUpdater.quitAndInstall()
+  if (process.platform === "darwin") {
+    const update = await autoUpdater.checkForUpdates()
+    const url = `${pack.repository.url}/releases/download/v${update.updateInfo.version}/${update.updateInfo.files[0].url}`
+    await shell.openExternal(url)
+    app.quit()
+  } else {
+    await autoUpdater.downloadUpdate()
+    autoUpdater.quitAndInstall()
+  }
 })
 
 ipcMain.handle("check-for-updates", async (event, startup: boolean) => {
@@ -1036,12 +1248,16 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, frame: false, backgroundColor: "#3177f5", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
+    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, frame: false, backgroundColor: "#3177f5", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()
     require("@electron/remote/main").enable(window.webContents)
+    window.on("ready-to-show", () => {
+      window?.show()
+    })
     window.on("closed", () => {
+      if (currentDialog) currentDialog.close()
       window = null
     })
     localShortcut.register("Ctrl+Shift+Z", () => {

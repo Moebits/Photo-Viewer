@@ -1,6 +1,7 @@
 import {ipcRenderer} from "electron"
-import Draggable from "react-draggable"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useRef, useContext} from "react"
+import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/cropdialog.less"
 
 const CropDialog: React.FunctionComponent = (props) => {
@@ -11,38 +12,43 @@ const CropDialog: React.FunctionComponent = (props) => {
         height: 100 as any
     }
     const [state, setState] = useState(initialState)
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showCropDialog = (event: any) => {
-            setVisible((prev) => {
-                const newState = !prev
-                if (newState === false) closeAndReset()
-                return newState
-            })
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            functions.updateTheme(theme)
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "crop") closeAndReset()
+        initTheme()
+        const updateTheme = (event: any, theme: string) => {
+            functions.updateTheme(theme)
         }
-        ipcRenderer.on("show-crop-dialog", showCropDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        ipcRenderer.on("update-theme", updateTheme)
         return () => {
-            ipcRenderer.removeListener("show-crop-dialog", showCropDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 
     useEffect(() => {
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
+        }
         const enterPressed = () => {
-            if (visible) click("accept")
+            click("accept")
         }
         const escapePressed = () => {
-            if (visible) click("reject")
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
         ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
             ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
@@ -77,13 +83,10 @@ const CropDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    const closeAndReset = (noRevert?: boolean) => {
-        setVisible(false)
+    const closeAndReset = async (noRevert?: boolean) => {
+        if (!noRevert) await ipcRenderer.invoke("revert-to-last-state")
+        await ipcRenderer.invoke("close-current-dialog")
         setState(initialState)
-        if (noRevert) return
-        setTimeout(() => {
-            ipcRenderer.invoke("revert-to-last-state")
-        }, 100)
     }
     
     const close = () => {
@@ -135,44 +138,39 @@ const CropDialog: React.FunctionComponent = (props) => {
         }
     }
 
-    if (visible) {
-        return (
-            <section className="crop-dialog" onMouseDown={close}>
-                <Draggable handle=".crop-title-container">
-                <div className="crop-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="crop-container">
-                        <div className="crop-title-container">
-                            <p className="crop-title">Bulk Crop</p>
+    return (
+        <section className="crop-dialog" onMouseDown={close}>
+            <div className="crop-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="crop-container">
+                    <div className="crop-title-container">
+                        <p className="crop-title">Bulk Crop</p>
+                    </div>
+                    <div className="crop-row-container">
+                        <div className="crop-row">
+                            <p className="crop-text">X %: </p>
+                            <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("x", event.target.value)} value={state.x} onKeyDown={xKey}/>
                         </div>
-                        <div className="crop-row-container">
-                            <div className="crop-row">
-                                <p className="crop-text">X %: </p>
-                                <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("x", event.target.value)} value={state.x} onKeyDown={xKey}/>
-                            </div>
-                            <div className="crop-row">
-                                <p className="crop-text">Y %: </p>
-                                <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("y", event.target.value)} value={state.y} onKeyDown={yKey}/>
-                            </div>
-                            <div className="crop-row">
-                                <p className="crop-text">Width %: </p>
-                                <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("width", event.target.value)} value={state.width} onKeyDown={widthKey}/>
-                            </div>
-                            <div className="crop-row">
-                                <p className="crop-text">Height %: </p>
-                                <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("height", event.target.value)} value={state.height} onKeyDown={heightKey}/>
-                            </div>
+                        <div className="crop-row">
+                            <p className="crop-text">Y %: </p>
+                            <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("y", event.target.value)} value={state.y} onKeyDown={yKey}/>
                         </div>
-                        <div className="crop-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
-                            <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                        <div className="crop-row">
+                            <p className="crop-text">Width %: </p>
+                            <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("width", event.target.value)} value={state.width} onKeyDown={widthKey}/>
+                        </div>
+                        <div className="crop-row">
+                            <p className="crop-text">Height %: </p>
+                            <input className="crop-input" type="text" spellCheck="false" onChange={(event) => changeState("height", event.target.value)} value={state.height} onKeyDown={heightKey}/>
                         </div>
                     </div>
+                    <div className="crop-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">{"Cancel"}</button>
+                        <button onClick={() => click("accept")} className="accept-button">{"Ok"}</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+        </section>
+    )
 }
 
-export default CropDialog
+ReactDom.render(<CropDialog/>, document.getElementById("root"))
