@@ -267,18 +267,27 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             }
             if (event.code === "Space") {
                 const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
-                if (selection?.style.opacity === "1") setCropEnabled(false)
+                if (selection?.style.opacity === "1") {
+                    setCropEnabled(false)
+                    functions.cropDrag(false)
+                }
                 document.documentElement.style.setProperty("cursor", "grab", "important")
             }
             if (event.key === "r") {
                 if (rotateEnabled) {
                     const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
-                    if (selection?.style.opacity === "1") setCropEnabled(true)
+                    if (selection?.style.opacity === "1") {
+                        setCropEnabled(true)
+                        functions.cropDrag(true)
+                    }
                     document.documentElement.style.setProperty("cursor", "default")
                     setRotateEnabled(false)
                 } else {
                     const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
-                    if (selection?.style.opacity === "1") setCropEnabled(false)
+                    if (selection?.style.opacity === "1") {
+                        setCropEnabled(false)
+                        functions.cropDrag(false)
+                    }
                     document.documentElement.style.setProperty("cursor", "row-resize", "important")
                     setRotateEnabled(true)
                 }
@@ -287,7 +296,10 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const keyUp = (event: globalThis.KeyboardEvent) => {
             if (event.code === "Space") {
                 const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
-                if (selection?.style.opacity === "1") setCropEnabled(true)
+                if (selection?.style.opacity === "1") {
+                    setCropEnabled(true)
+                    functions.cropDrag(true)
+                }
                 document.documentElement.style.setProperty("cursor", "default")
             }
         }
@@ -313,7 +325,10 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         }
         const onClick = async () => {
             const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
-            if (selection?.style.opacity === "1") setCropEnabled(true)
+            if (selection?.style.opacity === "1") {
+                setCropEnabled(true)
+                functions.cropDrag(true)
+            }
             document.documentElement.style.setProperty("cursor", "default")
             setRotateEnabled(false)
         }
@@ -434,11 +449,13 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                     return {...prev, x: 0, y: 0, width: 100, height: 100}
                 })
                 setCropEnabled(true)
+                functions.cropDrag(true)
                 ipcRenderer.invoke("trigger-accept-action", "crop")
             } else {
                 const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                 selection.style.opacity = "0"
                 setCropEnabled(false)
+                functions.cropDrag(false)
                 ipcRenderer.invoke("clear-accept-action")
             }
         }

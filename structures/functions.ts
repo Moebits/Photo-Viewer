@@ -341,4 +341,13 @@ export default class Functions {
             document.documentElement.style.setProperty("--version-reject-text", "black")
         }
     }
+
+    public static cropDrag = (on: boolean) => {
+        const photo = document.querySelector(".photo") as any 
+        if (on) {
+            photo.style["-webkit-app-region"] = "no-drag"
+        } else {
+            photo.style["-webkit-app-region"] = "drag"
+        }
+    }
 }
