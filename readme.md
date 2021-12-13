@@ -37,7 +37,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 
 ### Installation
 
-Download the latest exe installer from the [releases](https://github.com/Tenpi/Photo-Viewer/releases) tab. Updates can be installed automatically.
+Download the latest installer from the [releases](https://github.com/Tenpi/Photo-Viewer/releases) tab. Updates can be installed automatically.
 
 Known issues: Sorry, it seems like I can only build the macOS version correctly so if you are on Windows or Linux try compiling the source code yourself. Run both of these commands: \
 `npm install` (installs dependencies) \
