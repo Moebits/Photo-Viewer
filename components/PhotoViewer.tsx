@@ -584,7 +584,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
 
     return (
         <main className="photo-viewer" {...getRootProps()}>
-            <div className={hover || process.platform === "win32" ? "left-adjustment-bar visible" : "left-adjustment-bar"} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <div className={hover ? "left-adjustment-bar visible" : "left-adjustment-bar"} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 <img className="adjustment-img" src={brightnessHover ? brightnessButtonHover : brightnessButton} onClick={() => brightness()} width={30} height={30} onMouseEnter={() => setBrightnessHover(true)} onMouseLeave={() => setBrightnessHover(false)}/>
                 <img className="adjustment-img" src={hueHover ? hueButtonHover : hueButton} onClick={() => hue()} width={30} height={30} onMouseEnter={() => setHueHover(true)} onMouseLeave={() => setHueHover(false)}/>
                 <img className="adjustment-img" src={tintHover ? tintButtonHover : tintButton} onClick={() => tint()} width={30} height={30} onMouseEnter={() => setTintHover(true)} onMouseLeave={() => setTintHover(false)}/>
@@ -595,7 +595,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 <img className="adjustment-img" src={binarizeHover ? binarizeButtonHover : binarizeButton} onClick={() => binarize()} width={30} height={30} onMouseEnter={() => setBinarizeHover(true)} onMouseLeave={() => setBinarizeHover(false)}/>
                 <img className="adjustment-img" src={cropHover ? cropButtonHover : cropButton} onClick={() => toggleCrop()} width={30} height={30} onMouseEnter={() => setCropHover(true)} onMouseLeave={() => setCropHover(false)}/>
             </div>
-            <div className={hover || process.platform === "win32" ? "right-adjustment-bar visible" : "right-adjustment-bar"} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <div className={hover ? "right-adjustment-bar visible" : "right-adjustment-bar"} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 <img className="adjustment-img" src={resizeHover ? resizeButtonHover : resizeButton} onClick={() => resize()} width={30} height={30} onMouseEnter={() => setResizeHover(true)} onMouseLeave={() => setResizeHover(false)}/>
                 <img className="adjustment-img" src={rotateHover ? rotateButtonHover : rotateButton} onClick={() => rotate()} width={30} height={30} onMouseEnter={() => setRotateHover(true)} onMouseLeave={() => setRotateHover(false)}/>
                 <img className="adjustment-img" src={flipXHover ? flipXButtonHover : flipXButton} onClick={() => flipX()} width={30} height={30} onMouseEnter={() => setFlipXHover(true)} onMouseLeave={() => setFlipXHover(false)}/>
