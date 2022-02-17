@@ -9,6 +9,7 @@ import InfoDialog from "./components/InfoDialog"
 import ContextMenu from "./components/ContextMenu"
 import BulkSaveDialog from "./components/BulkSaveDialog"
 import "./index.less"
+import functions from "./structures/functions"
 
 export const HoverContext = React.createContext<any>(null)
 
@@ -26,13 +27,13 @@ const App = () => {
   return (
     <HoverContext.Provider value={{hover, setHover}}>
       <main className="app" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-        <TitleBar/>
-        <ContextMenu/>
-        <VersionDialog/>
-        <LinkDialog/>
-        <InfoDialog/>
-        <BulkSaveDialog/>
-        <PhotoViewer/>
+          <TitleBar/>
+          <ContextMenu/>
+          <VersionDialog/>
+          <LinkDialog/>
+          <InfoDialog/>
+          <BulkSaveDialog/>
+          <PhotoViewer/>
       </main>
     </HoverContext.Provider>
   )

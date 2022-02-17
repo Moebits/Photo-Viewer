@@ -1,4 +1,4 @@
-import {ipcRenderer} from "electron"
+import {ipcRenderer, remote, screen} from "electron"
 import GifEncoder from "gif-encoder"
 import pixels from "image-pixels"
 import gifFrames from "gif-frames"
@@ -7,6 +7,7 @@ import unzipper from "unzipper"
 import axios from "axios"
 import fs from "fs"
 import path from "path"
+import $ from "jquery"
 
 const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"]
 

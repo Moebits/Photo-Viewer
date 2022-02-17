@@ -1294,3 +1294,4 @@ if (!singleLock) {
 }
 
 app.allowRendererProcessReuse = false
+app.commandLine.appendSwitch("no-sandbox")
