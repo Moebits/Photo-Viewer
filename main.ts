@@ -61,7 +61,7 @@ ipcMain.handle("close-current-dialog", () => {
 ipcMain.handle("resize-window", async (event, image: string) => {
   const dim = await getDimensions(image)
   const {width, height} = functions.constrainDimensions(dim.width, dim.height)
-  window?.setSize(width, height, true)
+  // window?.setSize(width, height, true)
 })
 
 
