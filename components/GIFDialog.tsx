@@ -11,8 +11,7 @@ const GIFDialog: React.FunctionComponent = (props) => {
         speed: 1,
         reverse: false,
         transparency: false,
-        transparentColor: "#000000",
-        cumulative: true
+        transparentColor: "#000000"
     }
     const [state, setState] = useState(initialState)
     const [hover, setHover] = useState(false)
@@ -21,7 +20,7 @@ const GIFDialog: React.FunctionComponent = (props) => {
     useEffect(() => {
         ipcRenderer.invoke("get-gif-options").then((options) => {
             setState((prev) => {
-                return {...prev, transparency: options.transparency, transparentColor: options.transparentColor, cumulative: options.cumulative}
+                return {...prev, transparency: options.transparency, transparentColor: options.transparentColor}
             })
         })
         const initTheme = async () => {
@@ -90,11 +89,6 @@ const GIFDialog: React.FunctionComponent = (props) => {
                     return {...prev, transparentColor: value}
                 })
                 break
-            case "cumulative":
-                setState((prev) => {
-                    return {...prev, cumulative: value}
-                })
-                break
         }
     }
 
@@ -158,12 +152,6 @@ const GIFDialog: React.FunctionComponent = (props) => {
                         <div className="gif-row">
                             <p className="gif-text">Transparent Color: </p>   
                             <input type="color" className="gif-color-box" onChange={(event) => changeState("transparentColor", event.target.value)} onClick={() => setClickCounter(0)} value={state.transparentColor}></input>
-                        </div>
-                        <div className="gif-row">
-                            <p className="gif-text">Cumulative: </p>
-                            <div className="gif-checkbox-container">
-                                <img className="gif-checkbox" src={state.cumulative ? checkboxChecked : checkbox} width={12} height={12} onClick={() => changeState("cumulative", !state.cumulative)}/>
-                            </div>
                         </div>
                     </div>
                     <div className="gif-button-container">

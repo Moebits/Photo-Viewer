@@ -7,7 +7,6 @@ import unzipper from "unzipper"
 import axios from "axios"
 import fs from "fs"
 import path from "path"
-import $ from "jquery"
 
 const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"]
 
@@ -197,12 +196,11 @@ export default class Functions {
         return Functions.streamToBuffer(gif as NodeJS.ReadableStream)
     }
 
-    public static getGIFFrames = async (image: any, options?: {speed?: number, reverse?: boolean, cumulative?: boolean}) => {
-        if (!options) options = {} as {speed: number, reverse: boolean, cumulative: boolean}
+    public static getGIFFrames = async (image: any, options?: {speed?: number, reverse?: boolean}) => {
+        if (!options) options = {} as {speed: number, reverse: boolean}
         if (!options.speed) options.speed = 1
         if (!options.reverse) options.reverse = false
-        if (!options.cumulative) options.cumulative = false
-        const frames = await gifFrames({url: image, frames: "all", outputType: "png", cumulative: options.cumulative})
+        const frames = await gifFrames({url: image, frames: "all", outputType: "png"})
         let frameArray = [] as Buffer[]
         let delayArray = [] as number[]
         const constraint = options.speed > 1 ? frames.length / options.speed : frames.length

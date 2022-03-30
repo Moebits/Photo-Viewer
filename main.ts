@@ -35,8 +35,7 @@ const getGIFOptions = () => {
   return store.get("gifOptions", {
     transparency: false,
     transparentColor: "#000000",
-    cumulative: true
-  }) as {transparency: boolean, transparentColor: string, cumulative: boolean}
+  }) as {transparency: boolean, transparentColor: string}
 }
 
 const saveImage = (image: any, savePath: string) => {
@@ -135,12 +134,12 @@ ipcMain.handle("get-gif-options", () => {
 })
 
 ipcMain.handle("set-gif-options", (event: any, state: any) => {
-  let {transparency, transparentColor, cumulative} = state
-  store.set("gifOptions", {transparency, transparentColor, cumulative})
+  let {transparency, transparentColor} = state
+  store.set("gifOptions", {transparency, transparentColor})
 })
 
 ipcMain.handle("gif-effects", async (event: any, state: any) => {
-  let {speed, reverse, transparency, transparentColor, cumulative} = state
+  let {speed, reverse, transparency, transparentColor} = state
   let images = historyStates[historyIndex] as any
   if (!images) return null
   let imgArray = [] as any[]
@@ -151,7 +150,7 @@ ipcMain.handle("gif-effects", async (event: any, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     if (metadata.format === "gif") {
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {speed: Number(speed), reverse, cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image, {speed: Number(speed), reverse})
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i]).toBuffer()
@@ -165,7 +164,7 @@ ipcMain.handle("gif-effects", async (event: any, state: any) => {
   }
   updateHistoryState(imgArray)
   window?.webContents.send("update-images", imgArray)
-  store.set("gifOptions", {transparency, transparentColor, cumulative})
+  store.set("gifOptions", {transparency, transparentColor})
   
 })
 
@@ -177,7 +176,7 @@ ipcMain.handle("show-gif-dialog", async (event) => {
     if (currentDialog.type === "gif") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 190, height: 220, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 190, height: 175, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "gifdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -313,7 +312,7 @@ ipcMain.handle("crop", async (event, state: any) => {
     let buffer = null as any
     if (metadata.format === "gif") {
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -382,7 +381,7 @@ ipcMain.handle("rotate", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -457,7 +456,7 @@ ipcMain.handle("resize", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -526,7 +525,7 @@ ipcMain.handle("binarize", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -595,7 +594,7 @@ ipcMain.handle("pixelate", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const pixelWidth = Math.floor(metadata.width! / strength)
@@ -672,7 +671,7 @@ ipcMain.handle("blur", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -743,7 +742,7 @@ ipcMain.handle("tint", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -812,7 +811,7 @@ ipcMain.handle("hsl", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -881,7 +880,7 @@ ipcMain.handle("brightness", async (event, state: any) => {
     if (metadata.format === "gif") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i])
@@ -999,7 +998,7 @@ ipcMain.handle("invert", async (event) => {
     let buffer = null as any
     if (metadata.format === "gif") {
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         // @ts-ignore
@@ -1031,7 +1030,7 @@ ipcMain.handle("flipY", async (event) => {
     let buffer = null as any
     if (metadata.format === "gif") {
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i]).flip().toBuffer()
@@ -1061,7 +1060,7 @@ ipcMain.handle("flipX", async (event) => {
     let buffer = null as any
     if (metadata.format === "gif") {
       const gifOptions = getGIFOptions()
-      const {frameArray, delayArray} = await functions.getGIFFrames(image, {cumulative: gifOptions.cumulative})
+      const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
       for (let i = 0; i < frameArray.length; i++) {
         const newFrame = await sharp(frameArray[i]).flop().toBuffer()
