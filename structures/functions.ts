@@ -1,4 +1,4 @@
-import {ipcRenderer, remote, screen} from "electron"
+import {ipcRenderer, screen} from "electron"
 import GifEncoder from "gif-encoder"
 import pixels from "image-pixels"
 import gifFrames from "gif-frames"
@@ -346,7 +346,7 @@ export default class Functions {
         if (on) {
             photo.style["-webkit-app-region"] = "no-drag"
         } else {
-            photo.style["-webkit-app-region"] = "drag"
+            photo.style["-webkit-app-region"] = "no-drag"
         }
     }
 }
