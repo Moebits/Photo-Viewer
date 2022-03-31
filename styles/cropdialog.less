@@ -2,7 +2,6 @@
 @import "./titlebar.less";
 
 .crop-dialog {
-    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -17,6 +16,8 @@
 }
 
 .crop-dialog-box {
+    -webkit-app-region: drag;
+    z-index: 1000;
     position: absolute;
     pointer-events: all;
     left: 0; // 70px;

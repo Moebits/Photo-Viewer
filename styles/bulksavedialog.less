@@ -2,7 +2,6 @@
 @import "./titlebar.less";
 
 .bulk-save-dialog {
-    -webkit-app-region: no-drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -17,6 +16,8 @@
 }
 
 .bulk-save-dialog-box {
+    -webkit-app-region: drag;
+    z-index: 1000;
     pointer-events: all;
     margin-top: -80px;
     width: 230px;

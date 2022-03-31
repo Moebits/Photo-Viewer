@@ -2,7 +2,6 @@
 @import "./titlebar.less";
 
 .info-dialog {
-    -webkit-app-region: no-drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -16,6 +15,8 @@
 }
 
 .info-dialog-box {
+    -webkit-app-region: drag;
+    z-index: 1000;
     cursor: move;
     width: max-content;
     height: 270px;

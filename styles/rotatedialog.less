@@ -2,7 +2,6 @@
 @import "./titlebar.less";
 
 .rotate-dialog {
-    -webkit-app-region: drag;
     position: fixed;
     display: flex;
     width: 100%;
@@ -17,6 +16,8 @@
 }
 
 .rotate-dialog-box {
+    -webkit-app-region: drag;
+    z-index: 1000;
     position: absolute;
     pointer-events: all;
     right: 0; // 70px;
