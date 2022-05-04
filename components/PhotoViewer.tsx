@@ -243,14 +243,18 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     }, [image, bulk, bulkFiles])
 
     useEffect(() => {
-        const crop = async (response: "accept" | "cancel") => {
-            if (response === "accept") {
+        const crop = async (response: "accept" | "cancel" | "square") => {
+            if (response === "square") {
+                return setCropState((prev: any) => {
+                    return {...prev, aspect: prev.aspect ? undefined : 1}
+                })
+            } else if (response === "accept") {
                 const newImages = await ipcRenderer.invoke("crop", cropState)
                 if (newImages) bulk ? setBulkFiles(newImages) : setImage(newImages[0])
             }
             toggleCrop(false)
         }
-        const acceptActionResponse = (event: any, action: string, response: "accept" | "cancel") => {
+        const acceptActionResponse = (event: any, action: string, response: "accept" | "cancel" | "square") => {
             if (action === "crop") {
                 crop(response)
             }

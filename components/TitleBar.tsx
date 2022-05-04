@@ -32,6 +32,8 @@ import hundredButton from "../assets/icons/100.png"
 import hundredButtonHover from "../assets/icons/100-hover.png"
 import bulkButton from "../assets/icons/bulk.png"
 import bulkButtonHover from "../assets/icons/bulk-hover.png"
+import squareButton from "../assets/icons/square.png"
+import squareButtonHover from "../assets/icons/square-hover.png"
 import {HoverContext} from "../renderer"
 import pack from "../package.json"
 import "../styles/titlebar.less"
@@ -50,6 +52,7 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverTheme, setHoverTheme] = useState(false)
     const [hoverCancel, setHoverCancel] = useState(false)
     const [hoverAccept, setHoverAccept] = useState(false)
+    const [hoverSquare, setHoverSquare] = useState(false)
     const [hoverGIF, setHoverGIF] = useState(false)
     const [hoverHundred, setHoverHundred] = useState(false)
     const [hoverBulk, setHoverBulk] = useState(false)
@@ -70,6 +73,7 @@ const TitleBar: React.FunctionComponent = (props) => {
             setAcceptAction(null)
             setHoverCancel(false)
             setHoverAccept(false)
+            setHoverSquare(false)
         }
         ipcRenderer.on("trigger-accept-action", triggerAcceptAction)
         ipcRenderer.on("clear-accept-action", clearAcceptAction)
@@ -129,9 +133,9 @@ const TitleBar: React.FunctionComponent = (props) => {
         }
     }
 
-    const triggerAction = (response: "accept" | "cancel") => {
+    const triggerAction = (response: "accept" | "cancel" | "square") => {
         ipcRenderer.invoke("accept-action-response", acceptAction, response)
-        setAcceptAction(null)
+        if (response !== "square") setAcceptAction(null)
     }
 
     const gif = () => {
@@ -155,6 +159,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                     </div>
                     <div className="title-bar-buttons">
                         {acceptAction ? <>
+                            <img src={hoverSquare ? squareButtonHover : squareButton} height="20" width="20" className="title-bar-button square-action-button" onClick={() => triggerAction("square")} onMouseEnter={() => setHoverSquare(true)} onMouseLeave={() => setHoverSquare(false)}/>
                         <img src={hoverCancel ? cancelButtonHover : cancelButton} height="20" width="20" className="title-bar-button cancel-action-button" onClick={() => triggerAction("cancel")} onMouseEnter={() => setHoverCancel(true)} onMouseLeave={() => setHoverCancel(false)}/>
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>
                         </> : null}

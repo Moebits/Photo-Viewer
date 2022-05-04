@@ -1,6 +1,6 @@
 {
   "name": "photo-viewer",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "An image/GIF viewer that can apply various resizing and color effects.",
   "main": "dist/main.js",
   "scripts": {
@@ -163,7 +163,7 @@
     "react-dropzone": "^11.3.4",
     "react-image-crop": "^9.0.4",
     "react-zoom-pan-pinch": "^2.1.3",
-    "sharp": "^0.30.3",
+    "sharp": "^0.30.4",
     "unzipper": "^0.10.11"
   }
 }

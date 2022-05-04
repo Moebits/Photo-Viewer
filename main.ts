@@ -310,7 +310,7 @@ ipcMain.handle("crop", async (event, state: any) => {
     const cropWidth = Math.round(metadata.width! / 100 * width)
     const cropHeight = Math.round(metadata.height! / 100 * height)
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
@@ -323,7 +323,7 @@ ipcMain.handle("crop", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, cropWidth, cropHeight, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .extract({left: cropX, top: cropY, width: cropWidth, height: cropHeight})
         .toBuffer()
     }
@@ -394,8 +394,7 @@ ipcMain.handle("rotate", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, newMeta.width!, newMeta.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
-        .png()
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .rotate(degrees, {background: {r: 0, b: 0, g: 0, alpha: 0}})
         .toBuffer()
     }
@@ -453,7 +452,7 @@ ipcMain.handle("resize", async (event, state: any) => {
     let newWidth = percent ? (metadata.width! / 100) * Number(width) : Number(width)
     let newHeight = percent ? (metadata.height! / 100) * Number(height) : Number(height)
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -467,7 +466,7 @@ ipcMain.handle("resize", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, Number(width), Number(height), {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .resize(Math.round(newWidth), Math.round(newHeight), {fit: "fill", kernel: "cubic"})
         .toBuffer()
     }
@@ -522,7 +521,7 @@ ipcMain.handle("binarize", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -536,7 +535,7 @@ ipcMain.handle("binarize", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .threshold(binarize)
         .toBuffer()
     }
@@ -591,7 +590,7 @@ ipcMain.handle("pixelate", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -610,10 +609,10 @@ ipcMain.handle("pixelate", async (event, state: any) => {
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
       const pixelWidth = Math.floor(metadata.width! / strength)
-      const pixelBuffer = await sharp(image)
+      const pixelBuffer = await sharp(image, {animated: true, limitInputPixels: false})
         .resize(pixelWidth, null, {kernel: sharp.kernel.nearest})
         .toBuffer()
-      buffer = await sharp(pixelBuffer)
+      buffer = await sharp(pixelBuffer, {animated: true})
         .resize(metadata.width, null, {kernel: sharp.kernel.nearest})
         .toBuffer()
     }
@@ -668,7 +667,7 @@ ipcMain.handle("blur", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -683,7 +682,7 @@ ipcMain.handle("blur", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .blur(blur)
         .sharpen(sharpen)
         .toBuffer()
@@ -739,7 +738,7 @@ ipcMain.handle("tint", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -753,7 +752,7 @@ ipcMain.handle("tint", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .tint(tint)
         .toBuffer()
     }
@@ -808,7 +807,7 @@ ipcMain.handle("hsl", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -822,7 +821,7 @@ ipcMain.handle("hsl", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .modulate({hue, saturation, lightness})
         .toBuffer()
     }
@@ -877,7 +876,7 @@ ipcMain.handle("brightness", async (event, state: any) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       if (realTime) return null
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
@@ -892,7 +891,7 @@ ipcMain.handle("brightness", async (event, state: any) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image)
+      buffer = await sharp(image, {animated: true, limitInputPixels: false})
         .modulate({brightness: brightness})
         .linear(contrast, -(128 * contrast) + 128)
         .toBuffer()
@@ -996,7 +995,7 @@ ipcMain.handle("invert", async (event) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
@@ -1009,7 +1008,7 @@ ipcMain.handle("invert", async (event) => {
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
       // @ts-ignore
-      buffer = await sharp(image).negate({alpha: false}).toBuffer()
+      buffer = await sharp(image, {animated: true, limitInputPixels: false}).negate({alpha: false}).toBuffer()
     }
     const base64 = functions.bufferToBase64(buffer, metadata.format ?? "png")
     imgArray.push(base64)
@@ -1028,7 +1027,7 @@ ipcMain.handle("flipY", async (event) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
@@ -1039,7 +1038,7 @@ ipcMain.handle("flipY", async (event) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image).flip().toBuffer()
+      buffer = await sharp(image, {animated: true, limitInputPixels: false}).flip().toBuffer()
     }
     const base64 = functions.bufferToBase64(buffer, metadata.format ?? "png")
     imgArray.push(base64)
@@ -1058,7 +1057,7 @@ ipcMain.handle("flipX", async (event) => {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
     const metadata = await sharp(image).metadata()
     let buffer = null as any
-    if (metadata.format === "gif") {
+    if (metadata.format === "gif" && process.platform === "win32") {
       const gifOptions = getGIFOptions()
       const {frameArray, delayArray} = await functions.getGIFFrames(image)
       const newFrameArray = [] as Buffer[]
@@ -1069,7 +1068,7 @@ ipcMain.handle("flipX", async (event) => {
       const transparentColor = gifOptions.transparency ? gifOptions.transparentColor : undefined
       buffer = await functions.encodeGIF(newFrameArray, delayArray, metadata.width!, metadata.height!, {transparentColor})
     } else {
-      buffer = await sharp(image).flop().toBuffer()
+      buffer = await sharp(image, {animated: true, limitInputPixels: false}).flop().toBuffer()
     }
     const base64 = functions.bufferToBase64(buffer, metadata.format ?? "png")
     imgArray.push(base64)
@@ -1259,6 +1258,34 @@ if (!singleLock) {
       if (currentDialog) currentDialog.close()
       window = null
     })
+    if (process.platform === "darwin") {
+      localShortcut.register("Cmd+Shift+Z", () => {
+        window?.webContents.send("trigger-redo")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+Z", () => {
+        window?.webContents.send("trigger-undo")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+V", () => {
+        window?.webContents.send("trigger-paste")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+S", () => {
+        window?.webContents.send("save-img")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+O", () => {
+        window?.webContents.send("upload-file")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+=", () => {
+        window?.webContents.send("zoom-in")
+      }, window, {strict: true})
+      localShortcut.register("Cmd+-", () => {
+        window?.webContents.send("zoom-out")
+      }, window, {strict: true})
+      if (process.env.DEVELOPMENT === "true") {
+        globalShortcut.register("Cmd+Shift+I", () => {
+          window?.webContents.toggleDevTools()
+        })
+      }
+    }
     localShortcut.register("Ctrl+Shift+Z", () => {
       window?.webContents.send("trigger-redo")
     }, window, {strict: true})
