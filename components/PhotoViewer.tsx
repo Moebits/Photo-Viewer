@@ -336,6 +336,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             document.documentElement.style.setProperty("cursor", "default")
             setRotateEnabled(false)
         }
+        const photo = document.querySelector(".photo") as HTMLDivElement
         ipcRenderer.on("accept-action-response", acceptActionResponse)
         document.addEventListener("keydown", keyDown)
         document.addEventListener("keyup", keyUp)

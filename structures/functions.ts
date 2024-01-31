@@ -342,11 +342,11 @@ export default class Functions {
     }
 
     public static cropDrag = (on: boolean) => {
-        const photo = document.querySelector(".photo") as any 
+        const photo = document.querySelector(".photo") as any
         if (on) {
             photo.style["-webkit-app-region"] = "no-drag"
         } else {
-            photo.style["-webkit-app-region"] = "no-drag"
+            photo.style["-webkit-app-region"] = "drag"
         }
     }
 }
