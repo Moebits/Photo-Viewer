@@ -39,6 +39,13 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 
 Download the latest installer from the [releases](https://github.com/Tenpi/Photo-Viewer/releases) tab. Updates can be installed automatically.
 
+### MacOS
+
+On MacOS unsigned applications won't open, run this to remove the quarantine flag.
+```
+xattr -d com.apple.quarantine /Applications/Photo\ Viewer.app
+```
+
 ### Bugs and Requests
 
 Open an issue on my GitHub repository.
