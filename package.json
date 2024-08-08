@@ -26,10 +26,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tenpi/Photo-Viewer"
+    "url": "https://github.com/Moebits/Photo-Viewer"
   },
   "build": {
-    "appId": "com.tenpi.photo-viewer",
+    "appId": "com.moebits.photo-viewer",
     "productName": "Photo Viewer",
     "icon": "./assets/icon.png",
     "directories": {
@@ -81,7 +81,7 @@
     "publish": {
       "provider": "github",
       "repo": "Photo-Viewer",
-      "owner": "Tenpi",
+      "owner": "Moebits",
       "releaseType": "draft"
     },
     "fileAssociations": [
@@ -111,10 +111,9 @@
       }
     ]
   },
-  "author": "Tenpi",
+  "author": "Moebits",
   "license": "MIT",
   "devDependencies": {
-    "@tenpi/tslint": "^1.1.0",
     "@types/fluent-ffmpeg": "^2.1.18",
     "@types/get-pixels": "^3.3.1",
     "@types/gif-encoder": "^0.7.1",
