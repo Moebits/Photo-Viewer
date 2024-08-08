@@ -37,7 +37,7 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 
 ### Installation
 
-Download the latest installer from the [releases](https://github.com/Tenpi/Photo-Viewer/releases) tab. Updates can be installed automatically.
+Download the latest installer from the [releases](https://github.com/Moebits/Photo-Viewer/releases) tab. Updates can be installed automatically.
 
 ### MacOS
 
@@ -52,5 +52,5 @@ Open an issue on my GitHub repository.
 
 ### Also See
 
-- [Music Player](https://github.com/Tenpi/Music-Player)
-- [Video Player](https://github.com/Tenpi/Video-Player)
+- [Music Player](https://github.com/Moebits/Music-Player)
+- [Video Player](https://github.com/Moebits/Video-Player)
