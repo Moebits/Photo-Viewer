@@ -1,6 +1,6 @@
 ## Photo Viewer
 
-<img src="assets/images/readme-light.png">
+<img src="assets/images/readme.png">
 
 This is a photo/GIF viewer with support for many cool resizing and color effects.
 
