@@ -176,7 +176,7 @@ ipcMain.handle("show-gif-dialog", async (event) => {
     if (currentDialog.type === "gif") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 190, height: 175, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, transparent: true, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 190, height: 175, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, transparent: true, frame: false, backgroundColor: "#3177f5", roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "gifdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -1246,7 +1246,7 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, frame: false, backgroundColor: "#3177f5", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
+    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, frame: false, backgroundColor: "#3177f5", center: true, roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()
