@@ -155,7 +155,7 @@
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.5",
     "gif-encoder": "^0.7.2",
-    "gif-frames": "github:tenpi/gif-frames#no-cumulative",
+    "gif-frames": "github:moebits/gif-frames#no-cumulative",
     "image-pixels": "^2.2.2",
     "jquery": "^3.6.0",
     "pixiv.ts": "^0.4.2",
