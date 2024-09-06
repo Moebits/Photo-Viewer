@@ -7,7 +7,6 @@ import PhotoViewer from "./components/PhotoViewer"
 import LinkDialog from "./components/LinkDialog"
 import InfoDialog from "./components/InfoDialog"
 import ContextMenu from "./components/ContextMenu"
-import BulkSaveDialog from "./components/BulkSaveDialog"
 import "./index.less"
 import functions from "./structures/functions"
 
@@ -32,7 +31,6 @@ const App = () => {
           <VersionDialog/>
           <LinkDialog/>
           <InfoDialog/>
-          <BulkSaveDialog/>
           <PhotoViewer/>
       </main>
     </HoverContext.Provider>

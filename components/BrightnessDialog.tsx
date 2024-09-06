@@ -83,7 +83,6 @@ const BrightnessDialog: React.FunctionComponent = (props) => {
     }
 
     const click = (button: "accept" | "reject") => {
-        console.log(button)
         if (button === "accept") {
             ipcRenderer.invoke("apply-brightness", state)
         }

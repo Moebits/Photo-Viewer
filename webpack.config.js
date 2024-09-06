@@ -15,7 +15,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs", "sharp": "commonjs sharp"},
     output: {filename: "renderer.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -42,7 +42,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs", "sharp": "commonjs sharp"},
     output: {filename: "brightnessdialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -68,7 +68,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "hsldialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -94,7 +94,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "tintdialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -120,7 +120,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "blurdialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -146,7 +146,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "pixelatedialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -172,7 +172,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "binarizedialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -198,7 +198,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "resizedialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -224,7 +224,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "rotatedialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -250,7 +250,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "cropdialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -276,7 +276,7 @@ module.exports = [
     externals: {"react-native-fs": "reactNativeFs"},
     output: {filename: "gifdialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
         {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -294,6 +294,32 @@ module.exports = [
     ],
   },
   {
+    target: "electron-renderer",
+    entry: "./components/BulkSaveDialog",
+    mode: "production",
+    node: {__dirname: false},
+    stats: {children: true},
+    externals: {"react-native-fs": "reactNativeFs"},
+    output: {filename: "bulksavedialog.js", path: path.resolve(__dirname, "./dist"), publicPath: "./"},
+    resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], mainFields: ["main", "module", "browser"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    module: {
+      rules: [
+        {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
+        {test: /\.html$/, exclude, use: [{loader: "html-loader", options: {minimize: false}}]},
+        {test: /\.less$/, exclude, use: [{loader: MiniCssExtractPlugin.loader}, "css-loader", "less-loader"]},
+        {test: /\.css$/, use: [{loader: MiniCssExtractPlugin.loader}, "css-loader"]},
+        {test: /\.(tsx?|jsx?)$/, exclude, use: [{loader: "ts-loader", options: {transpileOnly: true}}]}
+      ]
+    },
+    plugins: [
+      new ForkTsCheckerWebpackPlugin(),
+      new HtmlWebpackPlugin({filename: "bulksavedialog.html", template: path.resolve(__dirname, "structures/bulksavedialog.html"), minify: true}),
+      new MiniCssExtractPlugin({filename: "bulksavedialog.css", chunkFilename: "bulksavedialog.css"}),
+      new webpack.DefinePlugin({"process.env.FLUENTFFMPEG_COV": false})
+    ],
+  },
+  {
     target: "electron-main",
     entry: "./main",
     mode: "production",
@@ -301,7 +327,7 @@ module.exports = [
     externals: {"sharp": "commonjs sharp"},
     output: {filename: "main.js", path: path.resolve(__dirname, "./dist")},
     resolve: {extensions: [".js", ".jsx", ".ts", ".tsx"], alias: {"react-dom$": "react-dom/profiling", "scheduler/tracing": "scheduler/tracing-profiling"}},
-    optimization: {minimize: true, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
+    optimization: {minimize: false, minimizer: [new TerserJSPlugin({extractComments: false})], moduleIds: "named"},
     module: {
       rules: [
           {test: /\.(jpe?g|png|gif|svg|mp3|wav|mp4|mkv|mov|avi|yml|txt)$/, exclude, use: [{loader: "file-loader", options: {name: "[path][name].[ext]"}}]},
@@ -312,5 +338,5 @@ module.exports = [
     plugins: [
       new webpack.DefinePlugin({"process.env.FLUENTFFMPEG_COV": false})
     ]
-  }
+  },
 ]

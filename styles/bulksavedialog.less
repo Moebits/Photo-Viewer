@@ -10,7 +10,7 @@
     justify-content: center;
     align-items: center;
     padding-top: @title-bar-height;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
     pointer-events: none;
     z-index: 500;
 }
@@ -18,12 +18,14 @@
 .bulk-save-dialog-box {
     -webkit-app-region: drag;
     z-index: 1000;
+    position: absolute;
+    left: 0;
+    top: 0;
     pointer-events: all;
-    margin-top: -80px;
     width: 230px;
     height: 170px;
     border-radius: 10px;
-    background-color: var(--title-color); // #2c99ff;
+    background-color: var(--title-color);
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -98,6 +100,7 @@
 }
 
 .reject-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -118,6 +121,7 @@
 }
 
 .accept-button {
+    -webkit-app-region: no-drag;
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;

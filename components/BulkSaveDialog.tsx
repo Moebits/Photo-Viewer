@@ -2,40 +2,44 @@ import {ipcRenderer} from "electron"
 import Slider from "rc-slider"
 import Draggable from "react-draggable"
 import React, {useEffect, useState, useRef} from "react"
+import ReactDom from "react-dom"
 import "../styles/bulksavedialog.less"
 
 const BulkSaveDialog: React.FunctionComponent = (props) => {
-    const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
 
     useEffect(() => {
-        const showBulkSaveDialog = (event: any) => {
-            setVisible(true)
+        const keyDown = async (event: globalThis.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                enterPressed()
+            }
+            if (event.key === "Escape") {
+                escapePressed()
+            }
         }
-        const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "bulk-save") setVisible(false)
+        const enterPressed = () => {
+            click("accept")
         }
-        ipcRenderer.on("show-bulk-save-dialog", showBulkSaveDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
-        return () => {
-            ipcRenderer.removeListener("show-bulk-save-dialog", showBulkSaveDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
-        }
-    }, [])
-
-    useEffect(() => {
         const escapePressed = () => {
-            if (visible) setVisible(false)
+            click("reject")
         }
+        document.addEventListener("keydown", keyDown)
+        ipcRenderer.on("enter-pressed", enterPressed)
         ipcRenderer.on("escape-pressed", escapePressed)
         return () => {
+            document.removeEventListener("keydown", keyDown)
+            ipcRenderer.removeListener("enter-pressed", enterPressed)
             ipcRenderer.removeListener("escape-pressed", escapePressed)
         }
     })
+
+    const closeAndReset = async () => {
+        await ipcRenderer.invoke("close-current-dialog")
+    }
     
     const close = () => {
         setTimeout(() => {
-            if (!hover) setVisible(false)
+            if (!hover) closeAndReset()
         }, 100)
     }
 
@@ -45,34 +49,31 @@ const BulkSaveDialog: React.FunctionComponent = (props) => {
         } else {
             ipcRenderer.invoke("bulk-save-directory")
         }
-        setVisible(false)
+        closeAndReset()
     }
 
-    if (visible) {
-        return (
-            <section className="bulk-save-dialog" onMouseDown={close}>
-                <Draggable handle=".bulk-save-title-container">
-                <div className="bulk-save-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                    <div className="bulk-save-container">
-                        <div className="bulk-save-title-container">
-                            <p className="bulk-save-title">Bulk Save</p>
-                        </div>
-                        <div className="bulk-save-row-container">
-                            <div className="bulk-save-row">
-                                <p className="bulk-save-text">Do you want to overwrite the original files?</p>
-                            </div>
-                        </div>
-                        <div className="bulk-save-button-container">
-                            <button onClick={() => click("reject")} className="reject-button">No</button>
-                            <button onClick={() => click("accept")} className="accept-button">Yes</button>
+    return (
+        <section className="bulk-save-dialog" onMouseDown={close}>
+            <Draggable handle=".bulk-save-title-container">
+            <div className="bulk-save-dialog-box" onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                <div className="bulk-save-container">
+                    <div className="bulk-save-title-container">
+                        <p className="bulk-save-title">Bulk Save</p>
+                    </div>
+                    <div className="bulk-save-row-container">
+                        <div className="bulk-save-row">
+                            <p className="bulk-save-text">Do you want to overwrite the original files?</p>
                         </div>
                     </div>
+                    <div className="bulk-save-button-container">
+                        <button onClick={() => click("reject")} className="reject-button">No</button>
+                        <button onClick={() => click("accept")} className="accept-button">Yes</button>
+                    </div>
                 </div>
-                </Draggable>
-            </section>
-        )
-    }
-    return null
+            </div>
+            </Draggable>
+        </section>
+    )
 }
 
-export default BulkSaveDialog
+ReactDom.render(<BulkSaveDialog/>, document.getElementById("root"))

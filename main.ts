@@ -38,13 +38,18 @@ const getGIFOptions = () => {
   }) as {transparency: boolean, transparentColor: string}
 }
 
-const saveImage = (image: any, savePath: string) => {
+const saveImage = async (image: any, savePath: string) => {
   if (image.startsWith("file:///")) image = image.replace("file:///", "")
   if (path.extname(savePath) === ".gif") {
     functions.downloadImage(image, savePath)
   } else {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
-    sharp(image).toFile(savePath)
+    if (image === savePath) {
+      const buffer = await sharp(image).toBuffer()
+      fs.writeFileSync(savePath, buffer)
+    } else {
+      sharp(image).toFile(savePath)
+    }
   }
 }
 
@@ -107,9 +112,34 @@ ipcMain.handle("bulk-save-overwrite", (event: any) => {
   shell.openPath(path.dirname(originalImages[0]))
 })
 
+/*
 ipcMain.handle("show-bulk-save-dialog", (event: any) => {
   window?.webContents.send("close-all-dialogs", "bulk-save")
   window?.webContents.send("show-bulk-save-dialog")
+})*/
+
+ipcMain.handle("show-bulk-save-dialog", async (event) => {
+  if (currentDialog) {
+    currentDialog.close()
+    revertToLastState()
+    // @ts-expect-error
+    if (currentDialog.type === "bulk-save") return
+  }
+  const bounds = window?.getBounds()!
+  currentDialog = new BrowserWindow({width: 230, height: 170, x: Math.floor(bounds.width/2) + 200, y: Math.floor(bounds.height/2), resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog.loadFile(path.join(__dirname, "bulksavedialog.html"))
+  currentDialog.removeMenu()
+  currentDialog.setAlwaysOnTop(true)
+  require("@electron/remote/main").enable(currentDialog.webContents)
+  currentDialog.on("ready-to-show", () => {
+    currentDialog?.show()
+    window?.focus()
+  })
+  currentDialog.on("closed", () => {
+    currentDialog = null
+  })
+  // @ts-expect-error
+  currentDialog.type = "bulk-save"
 })
 
 ipcMain.handle("bulk-process", () => {
