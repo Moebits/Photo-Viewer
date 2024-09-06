@@ -44,12 +44,8 @@ const saveImage = async (image: any, savePath: string) => {
     functions.downloadImage(image, savePath)
   } else {
     if (image.startsWith("data:")) image = functions.base64ToBuffer(image)
-    if (image === savePath) {
-      const buffer = await sharp(image).toBuffer()
-      fs.writeFileSync(savePath, buffer)
-    } else {
-      sharp(image).toFile(savePath)
-    }
+    if (image === savePath) image = fs.readFileSync(image)
+    sharp(image).toFile(savePath)
   }
 }
 
