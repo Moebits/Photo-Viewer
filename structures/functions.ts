@@ -124,7 +124,7 @@ export default class Functions {
     public static getSortedFiles = async (dir: string) => {
         const files = await fs.promises.readdir(dir)
         return files
-            .filter((f) => imageExtensions.includes(path.extname(f)))
+            .filter((f) => imageExtensions.includes(path.extname(f).toLowerCase()))
             .map(fileName => ({
                 name: fileName,
                 time: fs.statSync(`${dir}/${fileName}`).mtime.getTime(),

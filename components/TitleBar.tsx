@@ -80,10 +80,11 @@ const TitleBar: React.FunctionComponent = (props) => {
     useEffect(() => {
         ipcRenderer.invoke("check-for-updates", true)
         const initTheme = async () => {
-            const savedTheme = await ipcRenderer.invoke("get-theme")
-            changeTheme(savedTheme)
             const savedTransparency = await ipcRenderer.invoke("get-transparency")
-            changeTransparency(String(savedTransparency) === "true")
+            const transparentValue = String(savedTransparency) === "true"
+            changeTransparency(transparentValue)
+            const savedTheme = await ipcRenderer.invoke("get-theme")
+            changeTheme(savedTheme, transparentValue)
         }
         initTheme()
         const triggerAcceptAction = (event: any, action: string) => {
@@ -152,14 +153,15 @@ const TitleBar: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("trigger-paste")
     }
 
-    const changeTheme = (value?: string) => {
+    const changeTheme = (value?: string, transparentValue?: boolean) => {
         let condition = value !== undefined ? value === "dark" : theme === "light"
+        let transVal = transparentValue !== undefined ? transparentValue : transparency
         if (condition) {
-            functions.updateTheme("dark", transparency)
+            functions.updateTheme("dark", transVal)
             setTheme("dark")
             ipcRenderer.invoke("save-theme", "dark")
         } else {
-            functions.updateTheme("light", transparency)
+            functions.updateTheme("light", transVal)
             setTheme("light")
             ipcRenderer.invoke("save-theme", "light")
         }

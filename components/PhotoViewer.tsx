@@ -94,7 +94,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
     useEffect(() => {
         const getOpenedFile = async () => {
             const file = await ipcRenderer.invoke("get-opened-file")
-            if (file && imageExtensions.includes(path.extname(file))) {
+            if (file && imageExtensions.includes(path.extname(file).toLowerCase())) {
                 upload (file)
             }
         }
@@ -425,14 +425,14 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         if (typeof files === "string") files = [files]
         if (!files) files = await ipcRenderer.invoke("select-file") as string[]
         if (!files) return
-        files = files.filter((f) => imageExtensions.includes(path.extname(f)))
+        files = files.filter((f) => imageExtensions.includes(path.extname(f).toLowerCase()))
         if (files.length > 1) {
             setBulkFiles(files)
             setBulk(true)
             return ipcRenderer.invoke("update-original-images", files)
         }
         const file = files[0]
-        if (!imageExtensions.includes(path.extname(file))) return
+        if (!imageExtensions.includes(path.extname(file).toLowerCase())) return
         let newImg = file
         if (path.extname(file) === ".tiff") {
             newImg = await ipcRenderer.invoke("tiff-to-png", file)
@@ -650,7 +650,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         const directory = await ipcRenderer.invoke("select-directory")
         if (!directory) return
         let files = fs.readdirSync(directory)
-        files = files.filter((f) => imageExtensions.includes(path.extname(f))).map((f) => `${path.dirname(directory)}/${f}`)
+        files = files.filter((f) => imageExtensions.includes(path.extname(f).toLowerCase())).map((f) => `${path.dirname(directory)}/${f}`)
         if (!files.length) return
         setBulkFiles(files)
         setBulk(true)
