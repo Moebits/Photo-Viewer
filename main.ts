@@ -70,6 +70,12 @@ ipcMain.handle("save-image", async (event, image: any, savePath: string) => {
   shell.showItemInFolder(path.normalize(savePath))
 })
 
+ipcMain.handle("append-history-state", async (event, images: string | string[]) => {
+  if (!Array.isArray(images)) images = [images]
+  updateHistoryState(images)
+  return images
+})
+
 ipcMain.handle("bulk-save-directory", async (event: any) => {
   if (!window) return
   let images = historyStates[historyIndex] as any
@@ -82,6 +88,7 @@ ipcMain.handle("bulk-save-directory", async (event: any) => {
       {name: "JPG", extensions: ["jpg"]},
       {name: "GIF", extensions: ["gif"]},
       {name: "WEBP", extensions: ["webp"]},
+      {name: "AVIF", extensions: ["avif"]},
       {name: "TIFF", extensions: ["tiff"]}
     ],
     properties: ["createDirectory"]
@@ -144,6 +151,18 @@ ipcMain.handle("bulk-process", () => {
 
 ipcMain.handle("reset-bounds", () => {
   window?.webContents.send("reset-bounds")
+})
+
+ipcMain.handle("draw", () => {
+  window?.webContents.send("draw")
+})
+
+ipcMain.handle("draw-undo", () => {
+  window?.webContents.send("draw-undo")
+})
+
+ipcMain.handle("draw-invert", () => {
+  window?.webContents.send("draw-invert")
 })
 
 ipcMain.handle("get-info", (event: any, image: string) => {
@@ -1113,6 +1132,7 @@ ipcMain.handle("save-dialog", async (event, defaultPath: string) => {
       {name: "JPG", extensions: ["jpg"]},
       {name: "GIF", extensions: ["gif"]},
       {name: "WEBP", extensions: ["webp"]},
+      {name: "AVIF", extensions: ["avif"]},
       {name: "TIFF", extensions: ["tiff"]}
     ],
     properties: ["createDirectory"]
@@ -1197,7 +1217,7 @@ ipcMain.handle("select-file", async () => {
   const files = await dialog.showOpenDialog(window, {
     filters: [
       {name: "All Files", extensions: ["*"]},
-      {name: "Images", extensions: ["jpg", "jpeg", "png", "webp", "tiff"]},
+      {name: "Images", extensions: ["jpg", "jpeg", "png", "webp", "avif", "tiff"]},
       {name: "GIF", extensions: ["gif"]}
     ],
     properties: ["openFile", "multiSelections"]
@@ -1211,7 +1231,18 @@ ipcMain.handle("get-theme", () => {
 
 ipcMain.handle("save-theme", (event, theme: string) => {
   store.set("theme", theme)
-  currentDialog?.webContents.send("update-theme", theme)
+  const transparency = store.get("transparency", false)
+  currentDialog?.webContents.send("update-theme", theme, transparency)
+})
+
+ipcMain.handle("get-transparency", () => {
+  return store.get("transparency", false)
+})
+
+ipcMain.handle("save-transparency", (event, transparency: boolean) => {
+  store.set("transparency", transparency)
+  const theme = store.get("theme", "light")
+  currentDialog?.webContents.send("update-theme", theme, transparency)
 })
 
 ipcMain.handle("install-update", async (event) => {
@@ -1272,7 +1303,8 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, frame: false, backgroundColor: "#3177f5", center: true, roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
+    app.commandLine.appendSwitch('disable-features', 'DarkMode');
+    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, transparent: true, frame: false, hasShadow: false, backgroundColor: "#00000000", center: true, roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()

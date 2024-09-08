@@ -11,9 +11,15 @@ import "./index.less"
 import functions from "./structures/functions"
 
 export const HoverContext = React.createContext<any>(null)
+export const DrawingContext = React.createContext<any>(null)
+export const ErasingContext = React.createContext<any>(null)
+export const BrushColorContext = React.createContext<any>(null)
 
 const App = () => {
   const [hover, setHover] = useState(true)
+  const [drawing, setDrawing] = useState(false)
+  const [erasing, setErasing] = useState(false)
+  const [brushColor, setBrushColor] = useState("#2f6df5")
 
   useEffect(() => {
     const preventPaste = (event: ClipboardEvent) => event.preventDefault()
@@ -24,6 +30,9 @@ const App = () => {
   }, [])
 
   return (
+    <BrushColorContext.Provider value={{brushColor, setBrushColor}}>
+    <DrawingContext.Provider value={{drawing, setDrawing}}>
+    <ErasingContext.Provider value={{erasing, setErasing}}>
     <HoverContext.Provider value={{hover, setHover}}>
       <main className="app" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
           <TitleBar/>
@@ -34,6 +43,9 @@ const App = () => {
           <PhotoViewer/>
       </main>
     </HoverContext.Provider>
+    </ErasingContext.Provider>
+    </DrawingContext.Provider>
+    </BrushColorContext.Provider>
   )
 }
 

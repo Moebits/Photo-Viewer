@@ -4,17 +4,15 @@
   "description": "An image/GIF viewer that can apply various resizing and color effects.",
   "main": "dist/main.js",
   "scripts": {
-    "start": "npm run clean && webpack && cross-env DEVELOPMENT=true electron dist/main.js",
+    "start": "npm run clean && webpack --config webpack-fast.config.js && cross-env DEVELOPMENT=true electron dist/main.js",
     "clean": "del-cli ./dist",
     "build": "npm run clean ./build && webpack && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -p never",
     "rebuild": "npm rebuild --runtime=electron --target=14.0.0 --disturl=https://atom.io/download/atom-shell --abi=89",
-    "release": "npm run release:mac && npm run release:win && npm run release:linux",
+    "release": "npm run release:mac && npm run release:win",
     "release:mac": "npm run clean ./build && webpack && npm run sharp:mac && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p always",
     "release:win": "npm run clean ./build && webpack && npm run sharp:win && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -w -p always",
-    "release:linux": "npm run clean ./build && webpack && npm run sharp:linux && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -l -p always",
     "sharp:mac": "del-cli ./node_modules/sharp && npm install --platform=darwin --arch=arm64 sharp",
-    "sharp:win": "del-cli ./node_modules/sharp && npm install --platform=win32 --arch=x64 sharp",
-    "sharp:linux": "del-cli ./node_modules/sharp && npm install --platform=linux --arch=x64 sharp"
+    "sharp:win": "del-cli ./node_modules/sharp && npm install --platform=win32 --arch=x64 sharp"
   },
   "keywords": [
     "photo",
@@ -107,6 +105,10 @@
         "description": "WEBP File"
       },
       {
+        "ext": "avif",
+        "description": "AVIF File"
+      },
+      {
         "ext": "tiff",
         "description": "TIFF File"
       },
@@ -162,6 +164,7 @@
     "rc-slider": "^9.7.1",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.3",
+    "react-canvas-draw": "^1.2.1",
     "react-dom": "^17.0.1",
     "react-draggable": "^4.4.3",
     "react-dropzone": "^11.3.4",

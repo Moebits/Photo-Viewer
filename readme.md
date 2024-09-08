@@ -22,6 +22,11 @@ This is a photo/GIF viewer with support for many cool resizing and color effects
 
 ### Keyboard Shortcuts:
 - R: Rotate
+- T: Toggle transparency
+- Q: Decrease brush size
+- W: Increase brush size
+- B: Toggle brush
+- E: Toggle eraser
 - Space: Pan over cropping area
 - Escape: Reset rotation
 - Double Click: Reset rotation, zoom, and pan

@@ -8,7 +8,7 @@ import axios from "axios"
 import fs from "fs"
 import path from "path"
 
-const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"]
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".tiff", ".gif"]
 
 export default class Functions {
     public static arrayIncludes = (str: string, arr: string[]) => {
@@ -313,10 +313,12 @@ export default class Functions {
         return {width: Math.floor(newWidth), height: Math.floor(newHeight)}
     }
 
-    public static updateTheme = (value: string) => {
-        if (value === "dark") {
-            document.documentElement.style.setProperty("--bg-color", "#090409")
-            document.documentElement.style.setProperty("--title-color", "#090409")
+    public static updateTheme = (theme: string, transparent?: boolean) => {
+        if (theme === "dark") {
+            let bgColor = transparent ? "#00000000" : "#090409"
+            let titleColor = transparent ? "#00000000" : "#090409"
+            document.documentElement.style.setProperty("--bg-color", bgColor)
+            document.documentElement.style.setProperty("--title-color", titleColor)
             document.documentElement.style.setProperty("--text-color", "#3177f5")
             document.documentElement.style.setProperty("--button-color", "#090409")
             document.documentElement.style.setProperty("--button-text", "#4486ff")
@@ -327,8 +329,10 @@ export default class Functions {
             document.documentElement.style.setProperty("--version-accept-text", "#4486ff")
             document.documentElement.style.setProperty("--version-reject-text", "#338bff")
         } else {
-            document.documentElement.style.setProperty("--bg-color", "#7294cf")
-            document.documentElement.style.setProperty("--title-color", "#3177f5")
+            let bgColor = transparent ? "#00000000" :  "#7294cf"
+            let titleColor = transparent ? "#00000000" : "#3177f5"
+            document.documentElement.style.setProperty("--bg-color", bgColor)
+            document.documentElement.style.setProperty("--title-color", titleColor)
             document.documentElement.style.setProperty("--text-color", "black")
             document.documentElement.style.setProperty("--button-color", "#4486ff")
             document.documentElement.style.setProperty("--button-text", "black")
@@ -348,5 +352,25 @@ export default class Functions {
         } else {
             //photo.style["-webkit-app-region"] = "drag"
         }
+    }
+
+    public static imageDimensions = async (image: string) => {
+        return new Promise<{width: number, height: number}>(async (resolve) => {
+                const img = document.createElement("img")
+                img.addEventListener("load", async () => {
+                    let width = img.width
+                    let height = img.height
+                    resolve({width, height})
+                })
+                img.src = image
+        })
+    }
+
+    public static createImage = async (image: string) => {
+        const img = new Image()
+        img.src = image
+        return new Promise<HTMLImageElement>((resolve) => {
+            img.onload = () => resolve(img)
+        })
     }
 }

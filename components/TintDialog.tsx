@@ -16,11 +16,12 @@ const TintDialog: React.FunctionComponent = (props) => {
         setTimeout(() => {ipcRenderer.invoke("apply-tint", {...state, realTime: true})}, 100)
         const initTheme = async () => {
             const theme = await ipcRenderer.invoke("get-theme")
-            functions.updateTheme(theme)
+            const transparency = await ipcRenderer.invoke("get-transparency")
+            functions.updateTheme(theme, transparency)
         }
         initTheme()
-        const updateTheme = (event: any, theme: string) => {
-            functions.updateTheme(theme)
+        const updateTheme = (event: any, theme: string, transparency: boolean) => {
+            functions.updateTheme(theme, transparency)
         }
         ipcRenderer.on("update-theme", updateTheme)
         return () => {

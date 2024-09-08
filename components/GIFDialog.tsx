@@ -25,11 +25,12 @@ const GIFDialog: React.FunctionComponent = (props) => {
         })
         const initTheme = async () => {
             const theme = await ipcRenderer.invoke("get-theme")
-            functions.updateTheme(theme)
+            const transparency = await ipcRenderer.invoke("get-transparency")
+            functions.updateTheme(theme, transparency)
         }
         initTheme()
-        const updateTheme = (event: any, theme: string) => {
-            functions.updateTheme(theme)
+        const updateTheme = (event: any, theme: string, transparency: boolean) => {
+            functions.updateTheme(theme, transparency)
         }
         const clickCounter = () => {
             setClickCounter((prev) => prev + 1)

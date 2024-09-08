@@ -1,12 +1,28 @@
 import {ipcRenderer} from "electron"
-import Slider from "rc-slider"
 import Draggable from "react-draggable"
 import React, {useEffect, useState, useRef} from "react"
 import ReactDom from "react-dom"
+import functions from "../structures/functions"
 import "../styles/bulksavedialog.less"
 
 const BulkSaveDialog: React.FunctionComponent = (props) => {
     const [hover, setHover] = useState(false)
+
+    useEffect(() => {
+        const initTheme = async () => {
+            const theme = await ipcRenderer.invoke("get-theme")
+            const transparency = await ipcRenderer.invoke("get-transparency")
+            functions.updateTheme(theme, transparency)
+        }
+        initTheme()
+        const updateTheme = (event: any, theme: string, transparency: boolean) => {
+            functions.updateTheme(theme, transparency)
+        }
+        ipcRenderer.on("update-theme", updateTheme)
+        return () => {
+            ipcRenderer.removeListener("update-theme", updateTheme)
+        }
+    }, [])
 
     useEffect(() => {
         const keyDown = async (event: globalThis.KeyboardEvent) => {
