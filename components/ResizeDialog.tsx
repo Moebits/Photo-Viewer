@@ -39,6 +39,11 @@ const ResizeDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedResize = await ipcRenderer.invoke("get-temp", "resize")
+            if (savedResize) changeState("resize", JSON.parse(savedResize))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -80,6 +85,7 @@ const ResizeDialog: React.FunctionComponent = (props) => {
                     return {...prev, width: newState.width, height: newState.height}
                 })
                 ipcRenderer.invoke("apply-resize", {...state, width: newState.width, height: newState.height, percent: state.percent, realTime: true})
+                ipcRenderer.invoke("save-temp", "resize", JSON.stringify(newState))
                 break
         }
     }

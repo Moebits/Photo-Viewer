@@ -111,6 +111,8 @@ export default class extends PureComponent {
     hideInterface: PropTypes.bool,
     erase: PropTypes.bool,
     eraseColor: PropTypes.string,
+    zoom: PropTypes.number,
+    spin: PropTypes.number
   };
 
   static defaultProps = {
@@ -131,7 +133,9 @@ export default class extends PureComponent {
     immediateLoading: false,
     hideInterface: false,
     erase: false,
-    eraseColor: "#000000"
+    eraseColor: "#00000000",
+    zoom: 1,
+    spin: 0
   };
 
   constructor(props) {
@@ -210,6 +214,10 @@ export default class extends PureComponent {
 
     if (prevProps.imgSrc !== this.props.imgSrc) {
       this.drawImage();
+    }
+
+    if (prevProps.zoom !== this.props.zoom) {
+      this.loop();
     }
   }
 
@@ -393,6 +401,10 @@ export default class extends PureComponent {
   handleDrawStart = e => {
     e.preventDefault();
 
+    if (e.button === 1 || e.button === 2) {
+      return;
+    }
+
     // Start drawing
     this.isPressing = true;
 
@@ -522,21 +534,26 @@ export default class extends PureComponent {
     let p1 = points[0];
     let p2 = points[1];
 
-    this.ctx.temp.moveTo(p2.x, p2.y);
+    let newP1 = this.modifyCoordinates(p1);
+    let newP2 = this.modifyCoordinates(p2);
+
+    this.ctx.temp.moveTo(newP2.x, newP2.y);
     this.ctx.temp.beginPath();
 
     for (var i = 1, len = points.length; i < len; i++) {
       // we pick the point between pi+1 & pi+2 as the
       // end point and p1 as our control point
       var midPoint = midPointBtw(p1, p2);
-      this.ctx.temp.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
+      newP1 = this.modifyCoordinates(p1);
+      midPoint = this.modifyCoordinates(midPoint);
+      this.ctx.temp.quadraticCurveTo(newP1.x, newP1.y, midPoint.x, midPoint.y);
       p1 = points[i];
       p2 = points[i + 1];
     }
     // Draw last line as a straight line while
     // we wait for the next point to be able to calculate
     // the bezier control point
-    this.ctx.temp.lineTo(p1.x, p1.y);
+    this.ctx.temp.lineTo(newP1.x, newP1.y);
     this.ctx.temp.stroke();
   };
 
@@ -637,6 +654,13 @@ export default class extends PureComponent {
     ctx.stroke();
   };
 
+  modifyCoordinates = (point) => {
+    if (!point) return;
+    let x = point.x / this.props.zoom;
+    let y = point.y / this.props.zoom;
+    return {x, y}
+  }
+
   drawInterface = (ctx, pointer, brush) => {
     if (this.props.hideInterface) return;
 
@@ -644,17 +668,21 @@ export default class extends PureComponent {
 
     // Color brush preview according to erase prop
     const brushColor = this.props.erase ? this.props.eraseColor : this.props.brushColor;
-
+    let brushX = brush.x / this.props.zoom;
+    let brushY = brush.y / this.props.zoom;
+    let pointerX = pointer.x / this.props.zoom;
+    let pointerY = pointer.y / this.props.zoom;
+    
     // Draw brush preview
     ctx.beginPath();
     ctx.fillStyle = brushColor;
-    ctx.arc(brush.x, brush.y, this.props.brushRadius, 0, Math.PI * 2, true);
+    ctx.arc(brushX, brushY, this.props.brushRadius, 0, Math.PI * 2, true);
     ctx.fill();
 
     // Draw mouse point (the one directly at the cursor)
     ctx.beginPath();
     ctx.fillStyle = this.props.catenaryColor;
-    ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2, true);
+    ctx.arc(pointerX, pointerY, 4, 0, Math.PI * 2, true);
     ctx.fill();
 
     // Draw catenary
@@ -676,7 +704,7 @@ export default class extends PureComponent {
     // Draw brush point (the one in the middle of the brush preview)
     ctx.beginPath();
     ctx.fillStyle = this.props.catenaryColor;
-    ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true);
+    ctx.arc(brushX, brushY, 2, 0, Math.PI * 2, true);
     ctx.fill();
   };
 

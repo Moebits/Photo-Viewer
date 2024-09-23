@@ -19,6 +19,11 @@ const PixelateDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedPixelate = await ipcRenderer.invoke("get-temp", "pixelate")
+            if (savedPixelate) changeState("strength", Number(savedPixelate))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -60,6 +65,7 @@ const PixelateDialog: React.FunctionComponent = (props) => {
                     return {...prev, strength: value}
                 })
                 ipcRenderer.invoke("apply-pixelate", {...state, strength: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "pixelate", String(value))
                 break
         }
     }

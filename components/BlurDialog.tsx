@@ -20,6 +20,13 @@ const BlurDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedBlur= await ipcRenderer.invoke("get-temp", "blur")
+            const savedSharpen = await ipcRenderer.invoke("get-temp", "sharpen")
+            if (savedBlur) changeState("blur", Number(savedBlur))
+            if (savedSharpen) changeState("sharpen", Number(savedSharpen))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -61,12 +68,14 @@ const BlurDialog: React.FunctionComponent = (props) => {
                     return {...prev, blur: value}
                 })
                 ipcRenderer.invoke("apply-blur", {...state, blur: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "blur", String(value))
                 break
             case "sharpen":
                 setState((prev) => {
                     return {...prev, sharpen: value}
                 })
                 ipcRenderer.invoke("apply-blur", {...state, sharpen: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "sharoen", String(value))
                 break
         }
     }

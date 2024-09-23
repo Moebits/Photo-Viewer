@@ -29,6 +29,17 @@ const GIFDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedSpeed = await ipcRenderer.invoke("get-temp", "speed")
+            const savedReverse = await ipcRenderer.invoke("get-temp", "reverse")
+            const savedTransparency = await ipcRenderer.invoke("get-temp", "transparency")
+            const savedTransparentColor = await ipcRenderer.invoke("get-temp", "transparentColor")
+            if (savedSpeed) changeState("speed", Number(savedSpeed))
+            if (savedReverse) changeState("reverse", savedReverse === "true")
+            if (savedTransparency) changeState("transparency", savedTransparency === "true")
+            if (savedTransparentColor) changeState("transparentColor", savedTransparentColor)
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -74,21 +85,25 @@ const GIFDialog: React.FunctionComponent = (props) => {
                 setState((prev) => {
                     return {...prev, speed: value}
                 })
+                ipcRenderer.invoke("save-temp", "speed", String(value))
                 break
             case "reverse":
                 setState((prev) => {
                     return {...prev, reverse: value}
                 })
+                ipcRenderer.invoke("save-temp", "reverse", String(value))
                 break
             case "transparency":
                 setState((prev) => {
                     return {...prev, transparency: value}
                 })
+                ipcRenderer.invoke("save-temp", "transparency", String(value))
                 break
             case "transparentColor":
                 setState((prev) => {
                     return {...prev, transparentColor: value}
                 })
+                ipcRenderer.invoke("save-temp", "transparentColor", String(value))
                 break
         }
     }

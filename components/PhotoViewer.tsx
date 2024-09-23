@@ -164,7 +164,9 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         ipcRenderer.on("bulk-process", bulkProcess)
         ipcRenderer.on("draw", draw)
         ipcRenderer.on("draw-undo", undoDraw)
-        ipcRenderer.on("draw-invert", invertDraw)
+        ipcRenderer.on("draw-clear", clearDraw)
+        ipcRenderer.on("draw-increase-size", increaseBrushSize)
+        ipcRenderer.on("draw-decrease-size", decreaseBrushSize)
         document.addEventListener("dblclick", doubleClick)
         return () => {
             ipcRenderer.removeListener("open-file", openFile)
@@ -185,11 +187,20 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             ipcRenderer.removeListener("bulk-process", bulkProcess)
             ipcRenderer.removeListener("draw", draw)
             ipcRenderer.removeListener("draw-undo", undoDraw)
-            ipcRenderer.removeListener("draw-invert", invertDraw)
+            ipcRenderer.removeListener("draw-clear", clearDraw)
+            ipcRenderer.removeListener("draw-increase-size", increaseBrushSize)
+            ipcRenderer.removeListener("draw-decrease-size", decreaseBrushSize)
             document.removeEventListener("dblclick", doubleClick)
             ipcRenderer.removeListener("apply-crop", bulkCrop)
         }
     }, [])
+
+    useEffect(() => {
+        ipcRenderer.on("draw-invert", invertDraw)
+        return () => {
+            ipcRenderer.removeListener("draw-invert", invertDraw)
+        }
+    }, [brushColor])
 
     useEffect(() => {
         const triggerUndo = () => {
@@ -323,6 +334,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 document.documentElement.style.setProperty("cursor", "grab", "important")
             }
             if (event.key === "r") {
+                if (drawing) return
                 if (rotateEnabled) {
                     const selection = document.querySelector(".ReactCrop__crop-selection") as HTMLDivElement
                     if (selection?.style.opacity === "1") {
@@ -389,6 +401,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
             setRotateEnabled(false)
         }
         const wheel = (event: WheelEvent) => {
+            /*
             // @ts-ignore
             const trackPad = event.wheelDeltaY ? event.wheelDeltaY === -3 * event.deltaY : event.deltaMode === 0
             if (event.deltaY < 0) {
@@ -403,7 +416,7 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 } else {
                     increaseBrushSize()
                 }
-            }
+            }*/
         }
         ipcRenderer.on("accept-action-response", acceptActionResponse)
         document.addEventListener("wheel", wheel)
@@ -682,6 +695,10 @@ const PhotoViewer: React.FunctionComponent = (props) => {
         }
     }
 
+    const clearDraw = () => {
+        drawRef.current.clear()
+    }
+
     const undoDraw = () => {
         drawRef.current.undo()
     }
@@ -755,16 +772,16 @@ const PhotoViewer: React.FunctionComponent = (props) => {
                 <img className="adjustment-img" src={saveHover ? saveButtonHover : saveButton} onClick={() => save()} width={30} height={30} onMouseEnter={() => setSaveHover(true)} onMouseLeave={() => setSaveHover(false)}/>
                 <img className="adjustment-img" src={resetHover ? resetButtonHover : resetButton} onClick={() => reset()} width={30} height={30} onMouseEnter={() => setResetHover(true)} onMouseLeave={() => setResetHover(false)}/>
             </div>
-            <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} 
-            onZoomStop={(ref) => setZoomScale(ref.state.scale)} disabled={drawing} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} 
+            <TransformWrapper ref={zoomRef} minScale={0.5} limitToBounds={false} minPositionX={-200} maxPositionX={200} minPositionY={-200} maxPositionY={200} onZoom={(ref) => setZoomScale(ref.state.scale)}
+            onZoomStop={(ref) => setZoomScale(ref.state.scale)} panning={{allowLeftClickPan: !drawing, allowRightClickPan: false}} wheel={{step: 0.1}} pinch={{disabled: true}} zoomAnimation={{size: 0}} 
             alignmentAnimation={{disabled: true}} doubleClick={{mode: "reset", animationTime: 0}}>
                 <TransformComponent>
                     <div className="rotate-photo-container" style={{transform: `rotate(${rotateDegrees}deg)`}}>
                         {bulk ? <BulkContainer files={bulkFiles}/> :
                         <div className="photo-container">
                             {drawing ? <CanvasDraw ref={drawRef} className="draw-img" lazyRadius={0} brushRadius={brushSize} brushColor={brushColor} 
-                            catenaryColor="rgba(21, 133, 252, 0)" hideGrid={true} canvasWidth={width} canvasHeight={height} imgSrc={image} erase={erasing} 
-                            loadTimeOffset={0} eraseColor="#000000"/> :
+                            catenaryColor="rgba(0, 0, 0, 0)" hideGrid={true} canvasWidth={width} canvasHeight={height} imgSrc={image} erase={erasing} 
+                            loadTimeOffset={0} eraseColor="#000000" zoom={zoomScale} style={{transform: `rotate(${-rotateDegrees}deg)`}}/> :
                             <ReactCrop className="photo" src={image} zoom={zoomScale} spin={rotateDegrees} crop={cropState as any} 
                             onChange={(crop: any, percentCrop: any) => setCropState(percentCrop as any)} disabled={!cropEnabled} keepSelection={true}/>}
                         </div>}

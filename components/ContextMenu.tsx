@@ -49,6 +49,10 @@ const ContextMenu: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("copy-address", image)
     }
 
+    const clearCache = () => {
+        ipcRenderer.invoke("clear-temp")
+    }
+
 
     if (visible) {
         return (
@@ -56,6 +60,7 @@ const ContextMenu: React.FunctionComponent = (props) => {
                 <button className="context-button" onClick={(event) => copy(event)}>Copy</button>
                 <button className="context-button" onClick={() => paste()}>Paste</button>
                 <button className="context-button" onClick={(event) => getInfo(event)}>Get Info</button>
+                <button className="context-button" onClick={() => clearCache()}>Clear Cache</button>
                 <button className="context-button" onClick={() => saveImage()}>Save Image</button>
                 <button className="context-button" onClick={(event) => copyAddress(event)}>Copy Address</button>
             </section>

@@ -14,6 +14,7 @@ const HSLDialog: React.FunctionComponent = (props) => {
     const [state, setState] = useState(initialState)
     const [hover, setHover] = useState(false)
 
+
     useEffect(() => {
         const initTheme = async () => {
             const theme = await ipcRenderer.invoke("get-theme")
@@ -21,6 +22,15 @@ const HSLDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedHue = await ipcRenderer.invoke("get-temp", "hue")
+            const savedSaturation = await ipcRenderer.invoke("get-temp", "saturation")
+            const savedLightness = await ipcRenderer.invoke("get-temp", "lightness")
+            if (savedHue) changeState("hue", Number(savedHue))
+            if (savedSaturation) changeState("saturation", Number(savedSaturation))
+            if (savedLightness) changeState("lightness", Number(savedLightness))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -62,18 +72,21 @@ const HSLDialog: React.FunctionComponent = (props) => {
                     return {...prev, hue: value}
                 })
                 ipcRenderer.invoke("apply-hsl", {...state, hue: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "hue", String(value))
                 break
             case "saturation":
                 setState((prev) => {
                     return {...prev, saturation: value}
                 })
                 ipcRenderer.invoke("apply-hsl", {...state, saturation: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "saturation", String(value))
                 break
             case "lightness":
                 setState((prev) => {
                     return {...prev, lightness: value}
                 })
                 ipcRenderer.invoke("apply-hsl", {...state, lightness: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "lightness", String(value))
                 break
         }
     }

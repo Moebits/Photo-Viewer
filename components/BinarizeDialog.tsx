@@ -21,6 +21,11 @@ const BinarizeDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedBinarize = await ipcRenderer.invoke("get-temp", "binarize")
+            if (savedBinarize) changeState("binarize", Number(savedBinarize))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -62,6 +67,7 @@ const BinarizeDialog: React.FunctionComponent = (props) => {
                     return {...prev, binarize: value}
                 })
                 ipcRenderer.invoke("apply-binarize", {...state, binarize: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "binarize", String(value))
                 break
         }
     }

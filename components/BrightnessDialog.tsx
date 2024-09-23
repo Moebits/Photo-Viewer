@@ -20,6 +20,13 @@ const BrightnessDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedBrightness = await ipcRenderer.invoke("get-temp", "brightness")
+            const savedContrast = await ipcRenderer.invoke("get-temp", "contrast")
+            if (savedBrightness) changeState("brightness", Number(savedBrightness))
+            if (savedContrast) changeState("contrast", Number(savedContrast))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -61,12 +68,14 @@ const BrightnessDialog: React.FunctionComponent = (props) => {
                     return {...prev, brightness: value}
                 })
                 ipcRenderer.invoke("apply-brightness", {...state, brightness: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "brightness", String(value))
                 break
             case "contrast":
                 setState((prev) => {
                     return {...prev, contrast: value}
                 })
                 ipcRenderer.invoke("apply-brightness", {...state, contrast: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "contrast", String(value))
                 break
         }
     }

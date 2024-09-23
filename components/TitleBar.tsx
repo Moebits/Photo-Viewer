@@ -45,6 +45,12 @@ import squareButton from "../assets/icons/square.png"
 import squareButtonHover from "../assets/icons/square-hover.png"
 import transparentButton from "../assets/icons/transparent.png"
 import transparentButtonHover from "../assets/icons/transparent-hover.png"
+import increaseSizeButton from "../assets/icons/draw-increase.png"
+import increaseSizeButtonHover from "../assets/icons/draw-increase-hover.png"
+import decreaseSizeButton from "../assets/icons/draw-decrease.png"
+import decreaseSizeButtonHover from "../assets/icons/draw-decrease-hover.png"
+import clearButton from "../assets/icons/draw-clear.png"
+import clearButtonHover from "../assets/icons/draw-clear-hover.png"
 import pack from "../package.json"
 import "../styles/titlebar.less"
 import functions from "../structures/functions"
@@ -71,6 +77,9 @@ const TitleBar: React.FunctionComponent = (props) => {
     const [hoverUndo, setHoverUndo] = useState(false)
     const [hoverInvert, setHoverInvert] = useState(false)
     const [hoverTransparent, setHoverTransparent] = useState(false)
+    const [hoverIncreaseSize, setHoverIncreaseSize] = useState(false)
+    const [hoverDecreaseSize, setHoverDecreaseSize] = useState(false)
+    const [hoverClear, setHoverClear] = useState(false)
     const [hoverHundred, setHoverHundred] = useState(false)
     const [hoverBulk, setHoverBulk] = useState(false)
     const [theme, setTheme] = useState("light")
@@ -213,6 +222,19 @@ const TitleBar: React.FunctionComponent = (props) => {
         ipcRenderer.invoke("draw-invert")
     }
 
+    const clear = () => {
+        ipcRenderer.invoke("draw-clear")
+    }
+
+    const increaseSize = () => {
+        ipcRenderer.invoke("draw-increase-size")
+    }
+
+    const decreaseSize = () => {
+        ipcRenderer.invoke("draw-decrease-size")
+    }
+
+
     const resetBounds = () => {
         ipcRenderer.invoke("reset-bounds")
     }
@@ -235,8 +257,11 @@ const TitleBar: React.FunctionComponent = (props) => {
                     </div>
                     <div className="title-bar-buttons">
                         {acceptAction === "draw" ? <>
-                        <img src={hoverInvert ? invertButtonHover : invertButton} height="20" width="20" className="title-bar-button invert-button" onClick={invert} onMouseEnter={() => setHoverInvert(true)} onMouseLeave={() => setHoverInvert(false)}/>
-                        <img src={hoverUndo ? undoButtonHover : undoButton} height="20" width="20" className="title-bar-button undo-button" onClick={undo} onMouseEnter={() => setHoverUndo(true)} onMouseLeave={() => setHoverUndo(false)}/>
+                        <img style={{marginRight: "8px"}} src={hoverInvert ? invertButtonHover : invertButton} height="20" width="20" className="title-bar-button invert-button" onClick={invert} onMouseEnter={() => setHoverInvert(true)} onMouseLeave={() => setHoverInvert(false)}/>
+                        {/* <img style={{marginRight: "8px"}} src={hoverClear ? clearButtonHover : clearButton} height="20" width="20" className="title-bar-button clear-button" onClick={clear} onMouseEnter={() => setHoverClear(true)} onMouseLeave={() => setHoverClear(false)}/> */}
+                        <img style={{marginRight: "8px"}} src={hoverUndo ? undoButtonHover : undoButton} height="20" width="20" className="title-bar-button undo-button" onClick={undo} onMouseEnter={() => setHoverUndo(true)} onMouseLeave={() => setHoverUndo(false)}/>
+                        <img style={{marginRight: "5px"}} src={hoverIncreaseSize ? increaseSizeButtonHover : increaseSizeButton} height="20" width="20" className="title-bar-button increase-size-button" onClick={increaseSize} onMouseEnter={() => setHoverIncreaseSize(true)} onMouseLeave={() => setHoverIncreaseSize(false)}/>
+                        <img style={{marginRight: "8px"}} src={hoverDecreaseSize ? decreaseSizeButtonHover : decreaseSizeButton} height="20" width="20" className="title-bar-button decrease-size-button" onClick={decreaseSize} onMouseEnter={() => setHoverDecreaseSize(true)} onMouseLeave={() => setHoverDecreaseSize(false)}/>
                         <input type="color" className="draw-color-box" onChange={(event) => setBrushColor(event.target.value)} value={brushColor}></input>
                         <img src={hoverCancel ? cancelButtonHover : cancelButton} height="20" width="20" className="title-bar-button cancel-action-button" onClick={() => triggerAction("cancel")} onMouseEnter={() => setHoverCancel(true)} onMouseLeave={() => setHoverCancel(false)}/>
                         <img src={hoverAccept ? acceptButtonHover : acceptButton} height="20" width="20" className="title-bar-button accept-action-button" onClick={() => triggerAction("accept")} onMouseEnter={() => setHoverAccept(true)} onMouseLeave={() => setHoverAccept(false)}/>

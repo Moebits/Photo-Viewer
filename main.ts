@@ -16,6 +16,7 @@ let window: Electron.BrowserWindow | null
 let currentDialog: Electron.BrowserWindow | null
 autoUpdater.autoDownload = false
 const store = new Store()
+let tempStore = {} as any
 let filePath = ""
 
 let originalImages = null as any
@@ -48,6 +49,18 @@ const saveImage = async (image: any, savePath: string) => {
     sharp(image).toFile(savePath)
   }
 }
+
+ipcMain.handle("clear-temp", (event, key: string) => {
+  tempStore = {}
+})
+
+ipcMain.handle("get-temp", (event, key: string) => {
+  return tempStore[key]
+})
+
+ipcMain.handle("save-temp", (event, key: string, value: string) => {
+  tempStore[key] = value
+})
 
 const getDimensions = async (image: any) => {
   const metadata = await sharp(image).metadata()
@@ -129,7 +142,7 @@ ipcMain.handle("show-bulk-save-dialog", async (event) => {
     if (currentDialog.type === "bulk-save") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 230, height: 170, x: Math.floor(bounds.width/2) + 200, y: Math.floor(bounds.height/2), resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 230, height: 170, x: Math.floor(bounds.width/2) + 200, y: Math.floor(bounds.height/2), resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "bulksavedialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -163,6 +176,18 @@ ipcMain.handle("draw-undo", () => {
 
 ipcMain.handle("draw-invert", () => {
   window?.webContents.send("draw-invert")
+})
+
+ipcMain.handle("draw-clear", () => {
+  window?.webContents.send("draw-clear")
+})
+
+ipcMain.handle("draw-increase-size", () => {
+  window?.webContents.send("draw-increase-size")
+})
+
+ipcMain.handle("draw-decrease-size", () => {
+  window?.webContents.send("draw-decrease-size")
 })
 
 ipcMain.handle("get-info", (event: any, image: string) => {
@@ -221,7 +246,7 @@ ipcMain.handle("show-gif-dialog", async (event) => {
     if (currentDialog.type === "gif") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 190, height: 175, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, transparent: true, frame: false, backgroundColor: "#3177f5", roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 190, height: 175, x: bounds.x + bounds.width - 190 - 170, y: bounds.y + 60, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "gifdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -395,7 +420,7 @@ ipcMain.handle("show-crop-dialog", async (event) => {
     if (currentDialog.type === "crop") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 190, height: 220, x: bounds.x + 70, y: bounds.y + 400, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 190, height: 220, x: bounds.x + 70, y: bounds.y + 400, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "cropdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -466,7 +491,7 @@ ipcMain.handle("show-rotate-dialog", async (event) => {
     if (currentDialog.type === "rotate") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 230, height: 170, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 60, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 230, height: 170, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 60, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "rotatedialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -538,7 +563,7 @@ ipcMain.handle("show-resize-dialog", async (event) => {
     if (currentDialog.type === "resize") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 230, height: 150, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 40, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 230, height: 150, x: bounds.x + bounds.width - 230 - 70, y: bounds.y + 40, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "resizedialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -607,7 +632,7 @@ ipcMain.handle("show-binarize-dialog", async (event) => {
     if (currentDialog.type === "binarize") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 450, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 450, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "binarizedialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -684,7 +709,7 @@ ipcMain.handle("show-pixelate-dialog", async (event) => {
     if (currentDialog.type === "pixelate") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 330, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 250, height: 130, x: bounds.x + 70, y: bounds.y + 330, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "pixelatedialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -755,7 +780,7 @@ ipcMain.handle("show-blur-dialog", async (event) => {
     if (currentDialog.type === "blur") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 250, height: 155, x: bounds.x + 70, y: bounds.y + 190, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 250, height: 155, x: bounds.x + 70, y: bounds.y + 190, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "blurdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -824,7 +849,7 @@ ipcMain.handle("show-tint-dialog", async (event) => {
     if (currentDialog.type === "tint") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 180, height: 135, x: bounds.x + 70, y: bounds.y + 130, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 180, height: 135, x: bounds.x + 70, y: bounds.y + 130, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "tintdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -893,7 +918,7 @@ ipcMain.handle("show-hsl-dialog", async (event) => {
     if (currentDialog.type === "hsl") return
   }
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 250, height: 180, x: bounds.x + 70, y: bounds.y + 50, resizable: false, show: false, frame: false, backgroundColor: "#3177f5", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 250, height: 180, x: bounds.x + 70, y: bounds.y + 50, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "hsldialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -963,9 +988,8 @@ ipcMain.handle("show-brightness-dialog", async (event) => {
     // @ts-expect-error
     if (currentDialog.type === "brightness") return
   }
-  const backgroundColor = "#3177f5"
   const bounds = window?.getBounds()!
-  currentDialog = new BrowserWindow({width: 250, height: 150, x: bounds.x + 70, y: bounds.y + 40, resizable: false, show: false, frame: false, backgroundColor, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+  currentDialog = new BrowserWindow({width: 250, height: 150, x: bounds.x + 70, y: bounds.y + 40, resizable: false, show: false, frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
   currentDialog.loadFile(path.join(__dirname, "brightnessdialog.html"))
   currentDialog.removeMenu()
   currentDialog.setAlwaysOnTop(true)
@@ -1304,7 +1328,7 @@ if (!singleLock) {
 
   app.on("ready", () => {
     app.commandLine.appendSwitch('disable-features', 'DarkMode');
-    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false, transparent: true, frame: false, hasShadow: false, backgroundColor: "#00000000", center: true, roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
+    window = new BrowserWindow({width: 900, height: 650, minWidth: 520, minHeight: 250, show: false,frame: false, transparent: true, hasShadow: false, backgroundColor: "#00000000", center: true, roundedCorners: false, webPreferences: {nodeIntegration: true, contextIsolation: false, enableRemoteModule: true, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     openFile()

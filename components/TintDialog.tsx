@@ -20,6 +20,11 @@ const TintDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedTint = await ipcRenderer.invoke("get-temp", "tint")
+            if (savedTint) changeState("tint", Number(savedTint))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -61,6 +66,7 @@ const TintDialog: React.FunctionComponent = (props) => {
                     return {...prev, tint: value}
                 })
                 ipcRenderer.invoke("apply-tint", {...state, tint: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "tint", String(value))
                 break
         }
     }

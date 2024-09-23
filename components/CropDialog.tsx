@@ -21,6 +21,17 @@ const CropDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedX = await ipcRenderer.invoke("get-temp", "x")
+            const savedY = await ipcRenderer.invoke("get-temp", "y")
+            const savedWidth = await ipcRenderer.invoke("get-temp", "width")
+            const savedHeight = await ipcRenderer.invoke("get-temp", "height")
+            if (savedX) changeState("x", Number(savedX))
+            if (savedY) changeState("y", Number(savedY))
+            if (savedWidth) changeState("width", Number(savedWidth))
+            if (savedHeight) changeState("height", Number(savedHeight))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -62,24 +73,28 @@ const CropDialog: React.FunctionComponent = (props) => {
                     return {...prev, x: value}
                 })
                 ipcRenderer.invoke("apply-crop", {...state, x: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "x", String(value))
                 break
             case "y":
                 setState((prev) => {
                     return {...prev, y: value}
                 })
                 ipcRenderer.invoke("apply-crop", {...state, y: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "y", String(value))
                 break
             case "width":
                 setState((prev) => {
                     return {...prev, width: value}
                 })
                 ipcRenderer.invoke("apply-crop", {...state, width: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "width", String(value))
                 break
             case "height":
                 setState((prev) => {
                     return {...prev, height: value}
                 })
                 ipcRenderer.invoke("apply-crop", {...state, height: value, realTime: true})
+                ipcRenderer.invoke("save-temp", "height", String(value))
                 break
         }
     }

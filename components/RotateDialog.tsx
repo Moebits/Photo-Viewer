@@ -31,6 +31,11 @@ const RotateDialog: React.FunctionComponent = (props) => {
             functions.updateTheme(theme, transparency)
         }
         initTheme()
+        const savedValues = async () => {
+            const savedRotation = await ipcRenderer.invoke("get-temp", "rotation")
+            if (savedRotation) changeState("degrees", Number(savedRotation))
+        }
+        savedValues()
         const updateTheme = (event: any, theme: string, transparency: boolean) => {
             functions.updateTheme(theme, transparency)
         }
@@ -72,6 +77,7 @@ const RotateDialog: React.FunctionComponent = (props) => {
                     return {...prev, degrees: value}
                 })
                 ipcRenderer.invoke("apply-rotate", {...state, degrees: value, realTime: true})
+                ipcRenderer.invoke("get-temp", "rotation", String(value))
                 break
         }
     }
